@@ -1,0 +1,36 @@
+// All prebuilt voices available on the Gemini Live API, with the official
+// tone descriptors. The frontend fetches this list for its voice selector.
+export const VOICES = [
+  { name: "Charon", tone: "Deep · Informative" },
+  { name: "Enceladus", tone: "Breathy · Gentle" },
+  { name: "Iapetus", tone: "Clear · Calm" },
+  { name: "Alnilam", tone: "Firm · Grounded" },
+  { name: "Sulafat", tone: "Warm" },
+  { name: "Vindemiatrix", tone: "Gentle" },
+  { name: "Achernar", tone: "Soft" },
+  { name: "Gacrux", tone: "Mature" },
+  { name: "Sadaltager", tone: "Knowledgeable" },
+  { name: "Schedar", tone: "Even" },
+  { name: "Zephyr", tone: "Bright" },
+  { name: "Puck", tone: "Upbeat" },
+  { name: "Kore", tone: "Firm" },
+  { name: "Fenrir", tone: "Excitable" },
+  { name: "Leda", tone: "Youthful" },
+  { name: "Orus", tone: "Firm" },
+  { name: "Aoede", tone: "Breezy" },
+  { name: "Callirrhoe", tone: "Easy-going" },
+  { name: "Autonoe", tone: "Bright" },
+  { name: "Umbriel", tone: "Easy-going" },
+  { name: "Algieba", tone: "Smooth" },
+  { name: "Despina", tone: "Smooth" },
+  { name: "Erinome", tone: "Clear" },
+  { name: "Algenib", tone: "Gravelly" },
+  { name: "Rasalgethi", tone: "Informative" },
+  { name: "Laomedeia", tone: "Upbeat" },
+  { name: "Pulcherrima", tone: "Forward" },
+  { name: "Achird", tone: "Friendly" },
+  { name: "Zubenelgenubi", tone: "Casual" },
+  { name: "Sadachbia", tone: "Lively" },
+];
+
+export const VOICE_NAMES = new Set(VOICES.map((v) => v.name));

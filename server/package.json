@@ -1,0 +1,19 @@
+{
+  "name": "hey-jesus-server",
+  "version": "1.0.0",
+  "description": "Hey Jesus — voice conversation server (Gemini Live API proxy)",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.16.0",
+    "express": "^5.1.0",
+    "ws": "^8.18.0"
+  }
+}

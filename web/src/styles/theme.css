@@ -1,0 +1,33 @@
+/* Hey Jesus — dark & gold sacred theme (single dark theme by design) */
+:root {
+  --background: oklch(0.145 0.018 262);
+  --foreground: oklch(0.94 0.02 84);
+  --card: oklch(0.175 0.02 262);
+  --card-foreground: oklch(0.94 0.02 84);
+  --popover: oklch(0.175 0.02 262);
+  --popover-foreground: oklch(0.94 0.02 84);
+  --primary: oklch(0.78 0.115 78);
+  --primary-foreground: oklch(0.2 0.02 262);
+  --secondary: oklch(0.22 0.02 262);
+  --secondary-foreground: oklch(0.9 0.03 84);
+  --muted: oklch(0.22 0.02 262);
+  --muted-foreground: oklch(0.68 0.025 80);
+  --accent: oklch(0.26 0.03 78);
+  --accent-foreground: oklch(0.88 0.09 82);
+  --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.97 0.01 84);
+  --border: oklch(0.78 0.115 78 / 28%);
+  --input: oklch(0.78 0.115 78 / 35%);
+  --ring: oklch(0.78 0.115 78 / 60%);
+  --radius: 0.75rem;
+
+  /* Brand */
+  --gold: oklch(0.78 0.115 78);
+  --gold-bright: oklch(0.85 0.13 84);
+  --gold-dim: oklch(0.62 0.09 76);
+
+  --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond Variable", "Cormorant Garamond", Georgia, serif;
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
