@@ -5,8 +5,10 @@ import { config } from "./config.js";
 import { VOICES } from "./voices.js";
 import { loadSystemInstruction } from "./knowledge.js";
 import { handleVoiceSocket } from "./live-proxy.js";
+import { osApiRouter } from "./os-api.js";
 
-const systemInstruction = loadSystemInstruction(config.knowledgeDir);
+// Startup sanity log only — each conversation re-reads the knowledge dir.
+console.log(`[knowledge] ${loadSystemInstruction(config.knowledgeDir).length} chars loaded from ${config.knowledgeDir}`);
 
 const app = express();
 app.disable("x-powered-by");
@@ -19,6 +21,9 @@ app.get("/api/config", (_req, res) => {
   res.json({ voices: VOICES, defaultVoice: config.defaultVoice, model: config.model });
 });
 
+// Knowledge management for the /os dashboard (basic-auth enforced by Caddy).
+app.use("/os/api", osApiRouter(config.knowledgeDir));
+
 // Static frontend (built web app copied into ./public in the Docker image).
 app.use(express.static(config.publicDir, { maxAge: "1h", index: "index.html" }));
 app.use((_req, res) => {
@@ -27,7 +32,7 @@ app.use((_req, res) => {
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
-wss.on("connection", (socket) => handleVoiceSocket(socket, systemInstruction));
+wss.on("connection", (socket) => handleVoiceSocket(socket));
 
 server.listen(config.port, () => {
   console.log(`[server] Hey Jesus listening on :${config.port} (model=${config.model}, keys=${config.apiKeys.length})`);

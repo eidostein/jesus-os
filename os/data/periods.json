@@ -1,0 +1,32 @@
+{
+  "months": [
+    {
+      "id": "2026-08",
+      "conversations": null,
+      "visitors": null,
+      "knowledgeFiles": 2,
+      "voices": 30,
+      "languages": 2
+    }
+  ],
+  "targets": {},
+  "outcomes": {
+    "2026-08": [
+      {
+        "points": 10,
+        "text": "Hey Jesus v1.0 is live at jesus.baa.boo — a real voice conversation was verified end-to-end through Cloudflare (spoken question in, Jesus' voice answer out).",
+        "text_de": "Hey Jesus v1.0 ist live auf jesus.baa.boo — ein echtes Sprachgespräch wurde Ende-zu-Ende über Cloudflare verifiziert (gesprochene Frage rein, Jesu Stimme als Antwort raus)."
+      },
+      {
+        "points": 5,
+        "text": "Clean public-ready repo on GitHub (eidostein/jesus-os) with fresh history — zero trading-platform code or history carried over.",
+        "text_de": "Sauberes Repo auf GitHub (eidostein/jesus-os) mit frischer Historie — kein Code und keine Historie der Trading-Plattform übernommen."
+      },
+      {
+        "points": 5,
+        "text": "The jesus-os operating dashboard itself: goals, tasks, achievements, bilingual docs, and live knowledge management at /os.",
+        "text_de": "Das jesus-os-Dashboard selbst: Ziele, Aufgaben, Erfolge, zweisprachige Doku und Live-Wissensverwaltung unter /os."
+      }
+    ]
+  }
+}

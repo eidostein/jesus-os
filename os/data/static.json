@@ -1,0 +1,8 @@
+{
+  "project": "jesus-os",
+  "operators": [
+    { "tag": "M", "name": "Michał", "role": "Engineering & operations", "role_de": "Technik & Betrieb" },
+    { "tag": "P", "name": "Partner", "role": "Product owner — vision, voice, content", "role_de": "Produktinhaber — Vision, Stimme, Inhalte" },
+    { "tag": "C", "name": "Claude", "role": "Build agent — implements, deploys, documents", "role_de": "Build-Agent — implementiert, deployt, dokumentiert" }
+  ]
+}

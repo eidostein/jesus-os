@@ -1,0 +1,52 @@
+---
+title: The 30 voices — and how the Jesus voice was chosen
+summary: Every voice the model offers, why Charon opens as the default, and how to change it.
+category: Product
+audience: everyone
+order: 10
+updated: 2026-08-12
+---
+
+# The 30 voices — and how the Jesus voice was chosen
+
+The Gemini Live model ships **30 prebuilt voices**. All of them are selectable
+on the homepage, so anyone can find the Jesus that sounds right to them. The
+list itself is served by the backend (`GET /api/config`), so the site and this
+page can never disagree.
+
+## The default
+
+**Charon** — deep · informative — opens as the default: calm, low, unhurried,
+the closest to how most people imagine the voice. The strongest challengers,
+if a softer or clearer character is wanted:
+
+| Voice | Character | When it fits |
+|---|---|---|
+| **Charon** | deep · informative | the default — calm authority |
+| **Enceladus** | breathy · gentle | the softest, most intimate option |
+| **Iapetus** | clear · calm | clarity first, still warm |
+| **Alnilam** | firm · grounded | more strength, less softness |
+| **Sulafat** | warm | the friendliest middle ground |
+
+The full set: Charon, Enceladus, Iapetus, Alnilam, Sulafat, Vindemiatrix,
+Achernar, Gacrux, Sadaltager, Schedar, Zephyr, Puck, Kore, Fenrir, Leda, Orus,
+Aoede, Callirrhoe, Autonoe, Umbriel, Algieba, Despina, Erinome, Algenib,
+Rasalgethi, Laomedeia, Pulcherrima, Achird, Zubenelgenubi, Sadachbia.
+
+## Changing the default
+
+The site-wide default is one line in the server's `.env`:
+
+`DEFAULT_VOICE=Charon`
+
+Change it, redeploy (or restart the app container), done. Visitors' own
+selections always win over the default for their session.
+
+## Why not ElevenLabs?
+
+The obvious question — answered in full in *Operating → Decision log* (D1).
+The short version: the voice here is not a separate text-to-speech step but
+**the model itself speaking**. That is what makes interruption, tone and
+sub-second latency work. Bolting on an external voice would mean transcribing
+→ generating text → synthesizing — slower, more moving parts, and a monthly
+bill for something the current stack does natively at no extra cost.

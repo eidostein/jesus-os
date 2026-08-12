@@ -52,9 +52,8 @@ const I18nContext = createContext<{
 }>({ lang: "en", setLang: () => {}, t: (k) => k });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() =>
-    navigator.language?.toLowerCase().startsWith("de") ? "de" : "en"
-  );
+  // German-first by design (decision D2) — the toggle is per-visit only.
+  const [lang, setLang] = useState<Lang>("de");
   const t = (k: StringKey) => STRINGS[lang][k];
   return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
 }

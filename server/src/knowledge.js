@@ -1,24 +1,55 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 // System-instruction budget. The Live API accepts large contexts, but keeping
 // the instruction lean keeps first-response latency low.
-const MAX_CHARS = 200_000;
+export const MAX_CHARS = 200_000;
+
+const FALLBACK =
+  "You are Hey Jesus, a compassionate voice companion inspired by the life and teachings of Jesus of Nazareth.";
+
+/** True for files that are read to the model (everything else is docs for humans). */
+const isKnowledgeFile = (name) =>
+  (name.endsWith(".md") || name.endsWith(".txt")) && name.toLowerCase() !== "readme.md";
 
 /**
- * Builds the system instruction from every .md file in the knowledge
- * directory, in alphabetical order (prefix files with 00-, 10-, ... to
- * control ordering). README.md is documentation for humans and is skipped.
+ * Lists the knowledge directory with per-file metadata, marking which files
+ * fit the budget (same alphabetical-order rules the loader applies).
+ */
+export function listKnowledge(dir) {
+  let names = [];
+  try {
+    names = readdirSync(dir).filter((f) => f.endsWith(".md") || f.endsWith(".txt")).sort();
+  } catch {
+    return { files: [], totalChars: 0, maxChars: MAX_CHARS };
+  }
+  let used = 0;
+  const files = names.map((name) => {
+    const st = statSync(join(dir, name));
+    const chars = st.size; // bytes ≈ chars for our ASCII-heavy markdown; close enough for a meter
+    let loaded = false;
+    if (isKnowledgeFile(name) && used + chars <= MAX_CHARS) {
+      used += chars;
+      loaded = true;
+    }
+    return { name, chars, mtime: st.mtime.toISOString(), loaded };
+  });
+  return { files, totalChars: used, maxChars: MAX_CHARS };
+}
+
+/**
+ * Builds the system instruction from every knowledge file in the directory,
+ * in alphabetical order (prefix files with 00-, 10-, ... to control order).
+ * Called fresh for every conversation, so Knowledge-tab edits apply to the
+ * next session without a restart.
  */
 export function loadSystemInstruction(dir) {
   let files = [];
   try {
-    files = readdirSync(dir)
-      .filter((f) => f.endsWith(".md") && f.toLowerCase() !== "readme.md")
-      .sort();
+    files = readdirSync(dir).filter(isKnowledgeFile).sort();
   } catch {
     console.warn(`[knowledge] Directory not found: ${dir}`);
-    return "You are Hey Jesus, a compassionate voice companion inspired by the life and teachings of Jesus of Nazareth.";
+    return FALLBACK;
   }
 
   let out = "";
@@ -30,6 +61,5 @@ export function loadSystemInstruction(dir) {
     }
     out += `${text}\n\n`;
   }
-  console.log(`[knowledge] Loaded ${files.length} file(s), ${out.length} chars.`);
-  return out.trim();
+  return out.trim() || FALLBACK;
 }

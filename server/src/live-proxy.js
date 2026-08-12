@@ -1,11 +1,21 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { config } from "./config.js";
 import { VOICE_NAMES } from "./voices.js";
+import { loadSystemInstruction } from "./knowledge.js";
 
 // Round-robin start index so load spreads across the key pool between sessions.
 let keyCursor = 0;
 
-const LANGUAGE_CODES = { en: "en-US", de: "de-DE" };
+// Language is deliberately NOT pinned via speechConfig.languageCode — that
+// would lock the model's tongue. The UI language becomes a starting
+// preference in the system instruction; the standing rule below makes him
+// mirror whatever language the visitor actually speaks (decision D3).
+const LANGUAGE_PREAMBLE = {
+  de: "Die Oberfläche des Besuchers ist auf Deutsch eingestellt: Beginne das Gespräch auf Deutsch.",
+  en: "The visitor's interface is set to English: open the conversation in English.",
+};
+const LANGUAGE_RULE =
+  "If the visitor speaks another language at any point, recognize it and answer in that language from then on — always mirror the language the visitor speaks.";
 
 /**
  * Attaches a browser WebSocket to a Gemini Live session.
@@ -20,7 +30,7 @@ const LANGUAGE_CODES = { en: "en-US", de: "de-DE" };
  *                           {type:"error", message}
  *   server -> client  binary PCM16 mono @24kHz (model audio)
  */
-export function handleVoiceSocket(client, systemInstruction) {
+export function handleVoiceSocket(client) {
   let session = null;
   let closing = false;
 
@@ -62,7 +72,14 @@ export function handleVoiceSocket(client, systemInstruction) {
 
     if (msg.type === "start" && !session) {
       const voice = VOICE_NAMES.has(msg.voice) ? msg.voice : config.defaultVoice;
-      const language = LANGUAGE_CODES[msg.language] || "en-US";
+      const language = msg.language === "en" ? "en" : "de";
+      // Read fresh each session: Knowledge-tab edits apply to the next
+      // conversation without a restart.
+      const systemInstruction = [
+        loadSystemInstruction(config.knowledgeDir),
+        LANGUAGE_PREAMBLE[language],
+        LANGUAGE_RULE,
+      ].join("\n\n");
       try {
         session = await connectWithRotation(client, sendJson, { voice, language, systemInstruction });
         sendJson({ type: "ready", voice });
@@ -100,7 +117,6 @@ export function handleVoiceSocket(client, systemInstruction) {
             systemInstruction,
             speechConfig: {
               voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } },
-              languageCode: language,
             },
             inputAudioTranscription: {},
             outputAudioTranscription: {},

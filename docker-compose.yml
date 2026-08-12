@@ -4,6 +4,12 @@ services:
     image: hey-jesus-app
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Live knowledge is a mounted volume so Knowledge-tab edits survive
+      # image rebuilds and `git reset --hard` deploys (decision D7).
+      KNOWLEDGE_DIR: /data/knowledge
+    volumes:
+      - ${KNOWLEDGE_HOST_DIR:-./knowledge}:/data/knowledge
     expose:
       - "8790"
     networks:
@@ -19,8 +25,12 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      # bcrypt hash for the /os dashboard (user "jesus") — set in .env.
+      OS_DASH_HASH: ${OS_DASH_HASH:-}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./os:/srv/os:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:

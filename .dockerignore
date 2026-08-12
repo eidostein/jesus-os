@@ -8,3 +8,4 @@
 *.md
 !knowledge/**/*.md
 deploy/
+os/

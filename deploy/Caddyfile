@@ -11,6 +11,40 @@ http://jesus.baa.boo, https://jesus.baa.boo {
 	tls internal
 	encode zstd gzip
 
+	# ── /os — the jesus-os operating dashboard, password-protected ─────────
+	# The bcrypt hash comes from the environment (OS_DASH_HASH in .env),
+	# never from git — inherited practice from segnals-os.
+	handle /os/api/* {
+		basic_auth {
+			jesus {$OS_DASH_HASH}
+		}
+		# Knowledge management API, served by the app itself.
+		reverse_proxy app:8790
+	}
+	handle /os* {
+		route {
+			basic_auth {
+				jesus {$OS_DASH_HASH}
+			}
+			# /os MUST become /os/ so dashboard.html's relative
+			# <script src="data.js"> resolves inside /os/.
+			redir /os /os/ 308
+
+			# Whitelist, not blocklist: /srv/os holds the full os/ tree
+			# (markdown, data JSON, build scripts). Only the rendered
+			# dashboard and its data snapshot are servable.
+			@os_denied not path /os/ /os/dashboard.html /os/data.js
+			error @os_denied 404
+
+			uri strip_prefix /os
+			root * /srv/os
+			try_files {path} /dashboard.html
+			file_server
+		}
+		header Cache-Control "no-cache, no-store, must-revalidate"
+		header X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+	}
+
 	# WebSocket + HTTP traffic to the app (Caddy proxies WS transparently)
 	reverse_proxy app:8790
 

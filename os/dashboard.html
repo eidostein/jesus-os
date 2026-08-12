@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hey Jesus — jesus-os Dashboard</title>
+<style>
+/* ── Design tokens — inherited from segnals-os, re-themed gold for Hey Jesus ── */
+:root {
+  color-scheme: light;
+  --surface-1:#fdfcf9; --page:#f9f8f4;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+  --grid:#e3e1d7; --axis:#c5c3b5; --border:rgba(11,11,11,.10);
+  --series-1:#a87b24; --series-2:#2a78d6;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --success-text:#006300;
+  --radius:10px; --r-end:4px;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-1:#191713; --page:#0e0d0a;
+    --text-primary:#f5efe0; --text-secondary:#c8c3b4; --text-muted:#8d8875;
+    --grid:#2c2a22; --axis:#3a3729; --border:rgba(216,169,78,.16);
+    --series-1:#d8a94e; --series-2:#5598e7;
+    --success-text:#3fbf3f;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-1:#191713; --page:#0e0d0a;
+  --text-primary:#f5efe0; --text-secondary:#c8c3b4; --text-muted:#8d8875;
+  --grid:#2c2a22; --axis:#3a3729; --border:rgba(216,169,78,.16);
+  --series-1:#d8a94e; --series-2:#5598e7;
+  --success-text:#3fbf3f;
+}
+
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--page); color:var(--text-primary);
+  font-family:var(--font); font-size:14px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap { max-width:1160px; margin:0 auto; padding:28px 20px 72px; }
+body.docsmode .wrap { max-width:1460px; }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+h1 { font-size:21px; margin:0 0 4px; letter-spacing:-.01em; }
+h1 .star { color:var(--series-1); }
+.sub { color:var(--text-secondary); font-size:13px; margin:0; }
+.hbtns { display:flex; gap:8px; }
+button.ghost {
+  font:inherit; font-size:12px; color:var(--text-secondary);
+  background:var(--surface-1); border:1px solid var(--border);
+  border-radius:8px; padding:6px 11px; cursor:pointer;
+}
+button.ghost:hover { color:var(--text-primary); }
+
+/* ── Section scaffolding ──────────────────────────────────────────────────── */
+section { margin:0 0 40px; }
+.sec-head { display:flex; align-items:baseline; gap:10px; margin:0 0 3px; flex-wrap:wrap; padding-bottom:6px; border-bottom:1px solid var(--border); }
+h2 { font-size:15.5px; color:var(--text-primary); margin:0; font-weight:650; letter-spacing:-.01em; }
+.sec-note { font-size:12.5px; color:var(--text-muted); margin:6px 0 12px; }
+.card {
+  background:var(--surface-1); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+  transition:box-shadow .15s ease, border-color .15s ease;
+}
+.card:hover { box-shadow:0 2px 8px rgba(0,0,0,.05); }
+.grid { display:grid; gap:14px; }
+.g3 { grid-template-columns:repeat(3,1fr); }
+.g5 { grid-template-columns:repeat(5,1fr); }
+.g2 { grid-template-columns:1fr 1fr; }
+@media (max-width:1000px){ .g5 { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:860px){ .g3,.g2 { grid-template-columns:1fr; } }
+
+/* ── Alerts ───────────────────────────────────────────────────────────────── */
+.alert { display:flex; gap:12px; padding:14px 16px; border:1px solid var(--border);
+  border-left-width:3px; border-radius:8px; background:var(--surface-1); margin-bottom:8px; }
+.alert .ico { font-size:15px; line-height:1.3; flex:none; }
+.alert h3 { margin:0 0 2px; font-size:14px; }
+.alert p { margin:0 0 5px; font-size:13px; color:var(--text-secondary); }
+.alert .act { font-size:12px; font-weight:600; }
+.a-critical { border-left-color:var(--critical); } .a-critical .act { color:var(--critical); }
+
+/* ── Stat tiles ───────────────────────────────────────────────────────────── */
+.tile .lab { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+.tile .val { font-size:34px; font-weight:650; letter-spacing:-.02em; line-height:1.05; }
+.tile .ctx { font-size:12.5px; color:var(--text-secondary); margin-top:7px; }
+
+/* ── Score bar — the game layer ───────────────────────────────────────────── */
+.score { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px; }
+@media (max-width:860px){ .score { grid-template-columns:1fr; } }
+.scard { background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; }
+.scard .k { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); font-weight:600; }
+.scard .v { font-size:31px; font-weight:700; letter-spacing:-.02em; line-height:1.1; margin:6px 0 2px; }
+.scard .s { font-size:12.5px; color:var(--text-secondary); }
+.outcomes { background:var(--surface-1); border:1px solid var(--border); border-radius:var(--radius);
+  padding:14px 18px; margin-bottom:14px; }
+.outcomes h4 { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted);
+  font-weight:600; margin:0 0 10px; }
+.outcomes ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px; }
+.outcomes li { display:flex; gap:10px; align-items:flex-start; font-size:13.5px; line-height:1.5; }
+.outcomes li .pill { flex:0 0 auto; margin-top:1px; font-variant-numeric:tabular-nums; }
+#winsMore { margin-top:10px; text-align:center; }
+
+/* ── Tables & pills ───────────────────────────────────────────────────────── */
+.stable { width:100%; border-collapse:collapse; font-size:13.5px; }
+.stable th { text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em;
+  color:var(--text-muted); font-weight:600; padding:7px 10px; border-bottom:1px solid var(--border); }
+.stable td { padding:9px 10px; border-bottom:1px solid var(--grid); vertical-align:top; }
+.stable tr:last-child td { border-bottom:0; }
+.stable td.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.pill { display:inline-block; font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:999px;
+  border:1px solid var(--border); background:var(--page); }
+.pill.crit { color:var(--critical); border-color:var(--critical); }
+.pill.hi { color:var(--serious); border-color:var(--serious); }
+.pill.ok { color:var(--success-text); border-color:var(--success-text); }
+.pill-btn { font:inherit; font-size:12px; padding:5px 12px; border-radius:99px; cursor:pointer;
+  border:1px solid var(--border); background:var(--surface-1); color:var(--text-secondary); }
+.who { display:inline-block; min-width:22px; text-align:center; font-size:11px; font-weight:700;
+  border-radius:5px; padding:1px 5px; }
+.who.M { background:#dbe9fb; color:#1c5cab; } .who.P { background:#ecdcfc; color:#6d28d9; }
+.who.C { background:#faecd2; color:#8a5a00; }
+footer { margin-top:38px; padding-top:16px; border-top:1px solid var(--grid);
+  font-size:12px; color:var(--text-muted); }
+
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+.nav { display:flex; gap:2px; background:var(--surface-1); border:1px solid var(--border);
+       border-radius:9px; padding:3px; }
+.nav button { font:inherit; font-size:12.5px; font-weight:500; color:var(--text-secondary);
+       background:none; border:0; border-radius:6px; padding:6px 14px; cursor:pointer; }
+.nav button:hover { color:var(--text-primary); }
+.nav button[aria-current="page"] { background:var(--page); color:var(--text-primary);
+       box-shadow:0 1px 2px rgba(0,0,0,.06); }
+
+/* ── Knowledge tab ────────────────────────────────────────────────────────── */
+.k-grid { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:14px; align-items:start; }
+@media (max-width:900px){ .k-grid { grid-template-columns:1fr; } }
+.k-file { display:flex; justify-content:space-between; gap:8px; align-items:baseline;
+  padding:9px 10px; border-radius:7px; cursor:pointer; border:1px solid transparent; }
+.k-file:hover { background:var(--page); }
+.k-file.on { border-color:var(--series-1); background:var(--page); }
+.k-file .nm { font-weight:600; font-size:13px; overflow-wrap:anywhere; }
+.k-file .mt { font-size:11.5px; color:var(--text-muted); white-space:nowrap; }
+.k-name { width:100%; font:inherit; font-size:13px; font-weight:600; padding:8px 10px;
+  color:var(--text-primary); background:var(--page); border:1px solid var(--border); border-radius:8px; }
+.k-ed { width:100%; min-height:420px; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13px; line-height:1.55; padding:12px; color:var(--text-primary); background:var(--page);
+  border:1px solid var(--border); border-radius:8px; margin-top:10px; }
+.k-ed:focus, .k-name:focus { outline:2px solid var(--series-1); outline-offset:-1px; }
+.k-btns { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+.k-btn { font:inherit; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:8px; cursor:pointer;
+  border:1px solid var(--border); background:var(--surface-1); color:var(--text-primary); }
+.k-btn.primary { background:var(--series-1); border-color:var(--series-1); color:#1a1508; }
+.k-btn.danger { color:var(--critical); border-color:var(--critical); background:none; }
+.k-btn:disabled { opacity:.45; cursor:default; }
+.k-status { font-size:12.5px; color:var(--success-text); }
+.k-status.err { color:var(--critical); }
+.k-meter { height:6px; background:var(--grid); border-radius:3px; margin-top:10px; overflow:hidden; }
+.k-meter i { display:block; height:100%; background:var(--series-1); border-radius:3px; }
+.k-note { font-size:12px; color:var(--text-muted); margin-top:6px; }
+.k-intro p { margin:0 0 10px; font-size:13.5px; color:var(--text-secondary); }
+.k-intro p:last-child { margin-bottom:0; }
+.k-intro strong { color:var(--text-primary); }
+.k-intro a { color:var(--series-1); }
+
+/* ── Docs layer (unchanged from segnals-os) ───────────────────────────────── */
+.docs { display:grid; grid-template-columns:210px minmax(0,1fr) 176px; gap:40px; align-items:start; }
+@media (max-width:1180px){ .docs { grid-template-columns:200px minmax(0,1fr); gap:32px; } .d-toc{ display:none; } }
+@media (max-width:760px){ .docs { grid-template-columns:1fr; } .d-side{ position:static !important; } }
+.d-side { position:sticky; top:20px; max-height:calc(100vh - 40px); overflow-y:auto; }
+.d-search { width:100%; font:inherit; font-size:12.5px; padding:7px 10px; margin-bottom:16px;
+       color:var(--text-primary); background:var(--surface-1);
+       border:1px solid var(--border); border-radius:8px; }
+.d-search::placeholder { color:var(--text-muted); }
+.d-cat { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+       color:var(--text-muted); margin:18px 0 7px; }
+.d-cat:first-child { margin-top:0; }
+.win-doc { color:var(--series-1); text-decoration:none; white-space:nowrap; font-weight:550; }
+.win-doc:hover { text-decoration:underline; }
+.win-doc::before { content:"→ "; }
+.d-link { display:block; font-size:13px; color:var(--text-secondary); text-decoration:none;
+       padding:5px 10px; border-radius:6px; border-left:2px solid transparent; line-height:1.35; }
+.d-link:hover { color:var(--text-primary); background:var(--surface-1); }
+.d-link[aria-current="page"] { color:var(--series-1); border-left-color:var(--series-1);
+       background:var(--surface-1); font-weight:550; }
+.d-main { min-width:0; }
+.d-crumb { font-size:12px; color:var(--text-muted); margin-bottom:14px; display:flex;
+       gap:7px; align-items:center; flex-wrap:wrap; }
+.d-crumb a { color:var(--text-secondary); text-decoration:none; }
+.d-crumb a:hover { color:var(--series-1); text-decoration:underline; }
+.d-body { font-size:15.5px; line-height:1.7; color:var(--text-primary); max-width:none; }
+.d-body h1 { font-size:27px; line-height:1.22; letter-spacing:-.02em; margin:0 0 10px; }
+.d-body h1,.d-body h2,.d-body h3 { text-transform:none; letter-spacing:-.01em; color:var(--text-primary); font-weight:650; }
+.d-body h2 { font-size:19px; margin:38px 0 12px; padding-bottom:7px;
+       border-bottom:1px solid var(--border); letter-spacing:-.01em; scroll-margin-top:24px; }
+.d-body h3 { font-size:15.5px; margin:26px 0 8px; scroll-margin-top:24px; }
+.d-body p { margin:0 0 14px; }
+.d-body ul, .d-body ol { margin:0 0 14px; padding-left:22px; }
+.d-body li { margin-bottom:6px; }
+.d-body a { color:var(--series-1); }
+.d-body code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.87em;
+       background:var(--surface-1); border:1px solid var(--border);
+       border-radius:4px; padding:1px 5px; }
+.d-body hr { border:0; border-top:1px solid var(--border); margin:30px 0; }
+.d-body blockquote { margin:0 0 16px; padding:2px 0 2px 16px;
+       border-left:3px solid var(--axis); color:var(--text-secondary); }
+.d-body blockquote p:last-child { margin-bottom:0; }
+.d-tw { overflow-x:auto; margin:0 0 18px; border:1px solid var(--border); border-radius:var(--radius); }
+.d-body table { border-collapse:collapse; width:100%; font-size:13.5px; }
+.d-body th { text-align:left; font-weight:600; font-size:11.5px; text-transform:uppercase;
+       letter-spacing:.05em; color:var(--text-secondary); background:var(--surface-1);
+       padding:10px 13px; border-bottom:1px solid var(--border); }
+.d-body td { padding:10px 13px; border-bottom:1px solid var(--border); vertical-align:top; }
+.d-body tbody tr:last-child td { border-bottom:0; }
+.d-cal { color:var(--text-primary); border:1px solid var(--border); border-left-width:3px; border-radius:var(--r-end);
+       padding:14px 16px; margin:0 0 18px; background:var(--surface-1); font-size:14px; }
+.d-cal p:last-child, .d-cal ul:last-child, .d-cal ol:last-child { margin-bottom:0; }
+.d-cal-t { font-weight:650; margin-bottom:7px; }
+.cal-good { border-left-color:var(--good); }
+.cal-good .d-cal-t { color:var(--success-text); }
+.cal-warn { border-left-color:var(--warning); }
+.cal-bad  { border-left-color:var(--critical); }
+.cal-bad .d-cal-t { color:var(--critical); }
+.cal-note { border-left-color:var(--series-1); }
+.cal-note .d-cal-t { color:var(--series-1); }
+.d-toc { position:sticky; top:20px; font-size:12px; }
+.d-toc .k { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+       color:var(--text-muted); margin-bottom:9px; }
+.d-toc a { display:block; color:var(--text-secondary); text-decoration:none; padding:3px 0 3px 10px;
+       border-left:2px solid var(--border); line-height:1.35; }
+.d-toc a:hover { color:var(--text-primary); }
+.d-toc a.on { color:var(--series-1); border-left-color:var(--series-1); }
+.d-toc a.l3 { padding-left:20px; font-size:11.5px; }
+.d-meta { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--text-muted);
+       border-top:1px solid var(--border); margin-top:34px; padding-top:14px; }
+.d-pn { display:flex; gap:12px; margin-top:14px; }
+.d-pn a { flex:1; text-decoration:none; border:1px solid var(--border); border-radius:var(--radius);
+       padding:11px 14px; background:var(--surface-1); }
+.d-pn a:hover { border-color:var(--series-1); }
+.d-pn .l { display:block; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+       color:var(--text-muted); margin-bottom:3px; }
+.d-pn .t { color:var(--text-primary); font-size:13px; font-weight:550; }
+.d-pn .nx { text-align:right; }
+.d-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.d-card { display:block; text-decoration:none; background:var(--surface-1);
+       border:1px solid var(--border); border-radius:var(--radius); padding:16px 17px; }
+.d-card:hover { border-color:var(--series-1); }
+.d-card .t { color:var(--text-primary); font-size:14.5px; font-weight:600; margin-bottom:5px;
+       letter-spacing:-.01em; }
+.d-card .s { color:var(--text-secondary); font-size:12.5px; line-height:1.5; }
+.d-card .m { color:var(--text-muted); font-size:11px; margin-top:9px; }
+.d-empty { color:var(--text-muted); font-size:13px; padding:22px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1><span class="star">✦</span> Hey Jesus — jesus-os</h1>
+    <p class="sub" id="subline"></p>
+  </div>
+  <div class="hbtns">
+    <nav class="nav" id="nav">
+      <button data-view="dash">Dashboard</button>
+      <button data-view="know">Wissen</button>
+      <button data-view="docs">Doku</button>
+    </nav>
+    <button class="ghost" id="lgBtn">EN</button>
+    <button class="ghost" id="thBtn">Theme</button>
+  </div>
+</header>
+
+<div id="view-dash">
+
+<section id="score-sec">
+  <div class="sec-head"><h2 data-i18n="h_month"></h2></div>
+  <p class="sec-note" data-i18n="n_month"></p>
+  <div class="score" id="score"></div>
+  <div id="score-results"></div>
+  <div id="nextact"></div>
+</section>
+
+<section id="alerts-sec">
+  <div class="sec-head"><h2 data-i18n="h_alerts"></h2></div>
+  <div id="alerts"></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2 data-i18n="h_numbers"></h2></div>
+  <p class="sec-note" data-i18n="n_numbers"></p>
+  <div class="grid g5" id="tiles"></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2 data-i18n="h_short"></h2></div>
+  <p class="sec-note" data-i18n="n_short"></p>
+  <div class="card"><table class="stable" id="shortPlan"></table></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2 data-i18n="h_long"></h2></div>
+  <div class="card"><table class="stable" id="longPlan"></table></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2 data-i18n="h_tasks"></h2></div>
+  <p class="sec-note" data-i18n="n_tasks"></p>
+  <div class="card"><table class="stable" id="tasks"></table></div>
+</section>
+
+<section>
+  <div class="sec-head"><h2 data-i18n="h_wins"></h2></div>
+  <p class="sec-note" data-i18n="n_wins"></p>
+  <div class="card"><table class="stable" id="winsBox"></table></div>
+  <div id="winsMore"></div>
+</section>
+
+<footer id="foot"></footer>
+
+</div><!-- /view-dash -->
+
+<div id="view-know" hidden>
+  <section>
+    <div class="sec-head"><h2 data-i18n="k_h"></h2></div>
+    <p class="sec-note" data-i18n="k_n"></p>
+    <div class="card k-intro" id="kIntro"></div>
+  </section>
+  <section>
+    <div class="k-grid">
+      <div class="card">
+        <div id="kList"></div>
+        <div class="k-meter"><i id="kMeter" style="width:0%"></i></div>
+        <div class="k-note" id="kBudget"></div>
+        <div class="k-btns"><button class="k-btn" id="kNew"></button></div>
+      </div>
+      <div class="card">
+        <input class="k-name" id="kName" spellcheck="false" autocomplete="off">
+        <textarea class="k-ed" id="kEd" spellcheck="false"></textarea>
+        <div class="k-btns">
+          <button class="k-btn primary" id="kSave"></button>
+          <button class="k-btn danger" id="kDel"></button>
+          <span class="k-status" id="kStatus"></span>
+        </div>
+        <div class="k-note" id="kHint"></div>
+      </div>
+    </div>
+  </section>
+</div><!-- /view-know -->
+
+<div id="view-docs" hidden>
+  <div class="docs">
+    <aside class="d-side">
+      <input class="d-search" id="dSearch" type="search" placeholder="Doku durchsuchen…" autocomplete="off">
+      <div id="dNav"></div>
+    </aside>
+    <main class="d-main">
+      <div class="d-crumb" id="dCrumb"></div>
+      <article class="d-body" id="dBody"></article>
+      <div id="dFoot"></div>
+    </main>
+    <aside class="d-toc" id="dToc"></aside>
+  </div>
+</div><!-- /view-docs -->
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+const D = window.NL_DATA;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* German first on every load — deliberate: the product itself is German-first
+   (decision D2 in docs/DECISIONS.md). The toggle is per-visit only. */
+window.OS_LANG = "de";
+const isDE = () => window.OS_LANG === "de";
+/* Bilingual field picker: uses the *_de variant when present, falls back to English. */
+const L = (o, k) => (isDE() && o && o[k + "_de"]) ? o[k + "_de"] : (o ? o[k] : "");
+
+const I18N = {
+ de: {
+  h_month:"🏁 Dieser Monat",
+  n_month:"Aufwandspunkte kommen von erledigten Aufgaben (nach Schwierigkeit gewichtet), Ergebnispunkte von echten Resultaten. Ein Blick: Wird aus Arbeit Ergebnis?",
+  h_alerts:"🚨 Jetzt handeln",
+  h_numbers:"🎯 Die fünf Kennzahlen",
+  n_numbers:"Gespräche · Besucher · Wissensdateien · verfügbare Stimmen · Oberflächensprachen. Eine Kachel bleibt ehrlich leer, bis eine echte Zahl vorliegt (Analytik ist geplant).",
+  h_short:"🗓 Der Plan — die nächsten Wochen",
+  n_short:"Ein Plan ohne Datum ist ein Wunsch. Offene Termine werden nachgehalten.",
+  h_long:"🧭 Der Plan — dieses Quartal und darüber hinaus",
+  h_tasks:"✅ Offene Aufgaben — wer schuldet was",
+  n_tasks:"M = Michał · P = Partner · C = Claude. Was 3+ Monate mitgeschleppt wird, wird konfrontiert: erledigen oder streichen.",
+  h_wins:"🏆 Erfolge — was ausgeliefert wurde",
+  n_wins:"Einfache Sprache, echte Daten. Die ganze Geschichte jedes Eintrags steht im Doku-Tab.",
+  more_wins:"Ältere Erfolge anzeigen",
+  nav_know:"Wissen", nav_docs:"Doku", search:"Doku durchsuchen…",
+  sub: g => "Das Hey-Jesus-Betriebssystem · Stand " + g.built + " · Monat " + g.month,
+  sc_total:"Punkte diesen Monat", sc_total_s:"Aufwand + Ergebnis",
+  sc_effort:"Aufwandspunkte", sc_effort_s:"Aufgaben erledigt",
+  sc_outcome:"Ergebnispunkte", sc_outcome_s:"echte Resultate",
+  sc_results:"Wofür die Ergebnispunkte stehen",
+  next:"Nächster Schritt → ", noCrit:"Nichts Kritisches offen.", owner:"Zuständig", dl:"Frist",
+  awaiting:"wartet auf die erste echte Zahl", awaitingCtx:"füllt sich, sobald Analytik live ist",
+  th:{what:"Was",deadline:"Frist",owner:"Zuständig",state:"Stand",prio:"Priorität",goal:"Ziel",
+      why:"Warum es zählt",horizon:"Horizont",date:"Datum",area:"Bereich",shipped:"Was ausgeliefert wurde",
+      task:"Aufgabe",effort:"Aufwand"},
+  lbl:{conversations:"Gespräche",visitors:"Besucher",knowledgeFiles:"Wissensdateien",
+       voices:"Verfügbare Stimmen",languages:"Oberflächensprachen"},
+  prio:{critical:"kritisch",high:"hoch",normal:"normal"},
+  effw:{1:"leicht",3:"normal",5:"schwer",8:"brutal"},
+  dlv:{TBD:"offen"},
+  hor:{"this quarter":"dieses Quartal","next quarter":"nächstes Quartal"},
+  carried:"mitgeschleppt ",
+  foot1:"Erzeugt aus dem jesus-os-Repo — <code>data.js</code> ist der Schnappschuss, diese Seite die Ansicht. Markdown und <code>data/*.json</code> bearbeiten, dann mit <code>python3 os/scripts/build.py</code> neu bauen. Diese Seite und <code>data.js</code> nie von Hand ändern.",
+  foot2:"Betreiber: ",
+  /* Knowledge tab */
+  k_h:"📖 Wissen — was Jesus weiß",
+  k_n:"Diese Dateien sind Jesu Gedächtnis. Hier lesen, ändern, ergänzen, löschen — ohne Code, ohne Deployment.",
+  k_intro:"<p><strong>Woher weiß Jesus, wer er ist?</strong> Bei jedem neuen Gespräch liest der Server jede <code>.md</code>- und <code>.txt</code>-Datei aus diesem Ordner (alphabetisch) und fügt sie zu einer einzigen „Systeminstruktion\" zusammen — dem inneren Kompass des KI-Modells. Die Persona (wer er ist), der Sprachstil (wie er spricht) und alles Wissen (Bibeltexte, Themenanleitungen) kommen von hier.</p><p><strong>Änderungen wirken sofort:</strong> Speichern genügt — das nächste Gespräch auf der Website nutzt bereits den neuen Stand. Kein Neustart, kein Deployment.</p><p><strong>Tipps:</strong> Dateien mit Nummern-Präfix ordnen (<code>00-</code> zuerst). Kurz und konkret schreiben. Deutsch oder Englisch — beides funktioniert, Jesus antwortet ohnehin in der Sprache des Besuchers. Das Budget beträgt ~200.000 Zeichen; was darüber liegt, wird übersprungen. Die ganze Anleitung: <a href='#/docs/20-Knowledge/README'>Doku → Wissen &amp; Tuning</a>.</p>",
+  k_new:"+ Neue Datei", k_save:"Speichern", k_del:"Löschen",
+  k_saved:"Gespeichert — gilt ab dem nächsten Gespräch.",
+  k_deleted:"Gelöscht — gilt ab dem nächsten Gespräch.",
+  k_confirm:"Diese Datei wirklich löschen? Jesus vergisst ihren Inhalt beim nächsten Gespräch.",
+  k_err:"Fehler — Änderung nicht gespeichert: ",
+  k_offline:"Die Dateiliste konnte nicht geladen werden (API nicht erreichbar).",
+  k_pick:"Links eine Datei wählen — oder eine neue anlegen.",
+  k_hint:"Erlaubt: .md und .txt · max. 500 KB pro Datei · README.md wird Jesus nicht vorgelesen (nur Doku für Menschen).",
+  k_budget:(u,m)=>u.toLocaleString("de-DE") + " von " + m.toLocaleString("de-DE") + " Zeichen im Prompt-Budget belegt",
+  k_active:"aktiv", k_skipped:"nicht geladen", k_chars:" Zeichen"
+ },
+ en: {
+  h_month:"🏁 This month",
+  n_month:"Effort points come from finished tasks (weighted by difficulty), outcome points from real results. One glance: is work turning into results?",
+  h_alerts:"🚨 Needs action now",
+  h_numbers:"🎯 The five numbers",
+  n_numbers:"Conversations · visitors · knowledge files · voices available · UI languages. A tile stays honest and empty until a real number exists (analytics is planned).",
+  h_short:"🗓 The plan — next few weeks",
+  n_short:"A plan without a date is a wish. TBD deadlines are chased.",
+  h_long:"🧭 The plan — this quarter and beyond",
+  h_tasks:"✅ Open tasks — who owes what",
+  n_tasks:"M = Michał · P = Partner · C = Claude. Anything carried 3+ months gets confronted: do it or kill it.",
+  h_wins:"🏆 Achievements — what has shipped",
+  n_wins:"Plain language, real dates. The full story of each lives in the Docs tab.",
+  more_wins:"Show older achievements",
+  nav_know:"Knowledge", nav_docs:"Docs", search:"Search docs…",
+  sub: g => "The Hey Jesus operating system · built " + g.built + " · month " + g.month,
+  sc_total:"Points this month", sc_total_s:"effort + outcome",
+  sc_effort:"Effort points", sc_effort_s:"tasks finished",
+  sc_outcome:"Outcome points", sc_outcome_s:"real results",
+  sc_results:"What the outcome points are for",
+  next:"Next action → ", noCrit:"Nothing critical open.", owner:"owner", dl:"deadline",
+  awaiting:"awaiting first real number", awaitingCtx:"will fill once analytics is live",
+  th:{what:"What",deadline:"Deadline",owner:"Owner",state:"Where it stands",prio:"Priority",goal:"Goal",
+      why:"Why it matters",horizon:"Horizon",date:"Date",area:"Area",shipped:"What shipped",
+      task:"Task",effort:"Effort"},
+  lbl:{conversations:"Conversations",visitors:"Visitors",knowledgeFiles:"Knowledge files",
+       voices:"Voices available",languages:"UI languages"},
+  prio:{critical:"critical",high:"high",normal:"normal"},
+  effw:{1:"light",3:"normal",5:"hard",8:"brutal"},
+  dlv:{}, hor:{},
+  carried:"carried ",
+  foot1:"Generated from the jesus-os repo — <code>data.js</code> is the snapshot, this page is the view. Edit the markdown and <code>data/*.json</code>, then rebuild with <code>python3 os/scripts/build.py</code>. Never edit this page or data.js by hand.",
+  foot2:"Operators: ",
+  /* Knowledge tab */
+  k_h:"📖 Knowledge — what Jesus knows",
+  k_n:"These files are Jesus' memory. Read, change, add, delete — no code, no deployment.",
+  k_intro:"<p><strong>How does Jesus know who he is?</strong> At the start of every conversation the server reads every <code>.md</code> and <code>.txt</code> file in this folder (alphabetically) and joins them into a single \"system instruction\" — the AI model's inner compass. The persona (who he is), the speaking style (how he talks) and all knowledge (scripture, topic guidance) come from here.</p><p><strong>Changes take effect immediately:</strong> just save — the next conversation on the website already uses the new state. No restart, no deployment.</p><p><strong>Tips:</strong> order files with number prefixes (<code>00-</code> first). Write short and concrete. German or English both work — Jesus answers in the visitor's language anyway. The budget is ~200,000 characters; anything beyond is skipped. Full guide: <a href='#/docs/20-Knowledge/README'>Docs → Knowledge &amp; Tuning</a>.</p>",
+  k_new:"+ New file", k_save:"Save", k_del:"Delete",
+  k_saved:"Saved — applies from the next conversation.",
+  k_deleted:"Deleted — applies from the next conversation.",
+  k_confirm:"Really delete this file? Jesus forgets its content on the next conversation.",
+  k_err:"Error — change not saved: ",
+  k_offline:"Could not load the file list (API unreachable).",
+  k_pick:"Pick a file on the left — or create a new one.",
+  k_hint:"Allowed: .md and .txt · max 500 KB per file · README.md is never read to Jesus (docs for humans only).",
+  k_budget:(u,m)=>u.toLocaleString("en-US") + " of " + m.toLocaleString("en-US") + " characters of the prompt budget used",
+  k_active:"active", k_skipped:"not loaded", k_chars:" chars"
+ }
+};
+const T = k => I18N[isDE() ? "de" : "en"][k];
+window.OS_T = T; window.OS_ISDE = isDE;
+
+function applyLang(){
+  document.documentElement.lang = isDE() ? "de" : "en";
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = T(el.dataset.i18n); });
+  const nav = $("nav").querySelectorAll("button");
+  nav[1].textContent = T("nav_know");
+  nav[2].textContent = T("nav_docs");
+  $("lgBtn").textContent = isDE() ? "EN" : "DE";
+  const s = document.getElementById("dSearch"); if (s) s.placeholder = T("search");
+  $("subline").textContent = T("sub")({built: D.generated, month: D.currentMonth});
+}
+
+$("thBtn").onclick = () => {
+  const r = document.documentElement;
+  r.setAttribute("data-theme", r.getAttribute("data-theme") === "light" ? "dark" : "light");
+};
+$("lgBtn").onclick = () => {
+  window.OS_LANG = isDE() ? "en" : "de";
+  applyLang(); draw();
+  dispatchEvent(new Event("langchange"));
+};
+
+const cur = D.periods.find(p => p.id === D.currentMonth) || D.periods[D.periods.length-1] || {};
+const dlShow = v => (T("dlv")[v] || v);
+
+function score(){
+  const outs = cur.outcomes || [];
+  const cards =
+    '<div class="scard"><div class="k">' + T("sc_total") + '</div>' +
+      '<div class="v">' + (cur.score||0) + '</div>' +
+      '<div class="s">' + T("sc_total_s") + '</div></div>' +
+    '<div class="scard"><div class="k">' + T("sc_effort") + '</div>' +
+      '<div class="v">' + (cur.effort||0) + '</div>' +
+      '<div class="s">' + (cur.done||0) + ' ' + T("sc_effort_s") + '</div></div>' +
+    '<div class="scard"><div class="k">' + T("sc_outcome") + '</div>' +
+      '<div class="v">' + (cur.outcome||0) + '</div>' +
+      '<div class="s">' + outs.length + ' ' + T("sc_outcome_s") + '</div></div>';
+  const list = outs.length
+    ? '<div class="outcomes"><h4>' + T("sc_results") + '</h4><ul>' +
+        outs.map(o => '<li><span class="pill ok">+' + (o.points||0) + '</span><span>' +
+                      esc(L(o,"text")) + '</span></li>').join("") +
+      '</ul></div>'
+    : "";
+  $("score").innerHTML = cards;
+  $("score-results").innerHTML = list;
+  const top = (D.plans.shortTerm||[]).find(p => p.priority === "critical") ||
+              (D.plans.shortTerm||[]).find(p => p.priority === "high");
+  $("nextact").innerHTML = top ? '<p class="sec-note">' + T("next") + '<strong>' + esc(L(top,"item")) + '</strong></p>' : "";
+}
+
+function alerts(){
+  const items = (D.plans.shortTerm||[]).filter(p => p.priority === "critical");
+  $("alerts").innerHTML = items.map(a => `
+    <div class="alert a-critical">
+      <div class="ico">🔴</div>
+      <div><h3>${esc(L(a,"item"))}</h3><p>${esc(L(a,"state"))}</p>
+      <div class="act">→ ${T("owner")}: <span class="who ${esc(a.owner)}">${esc(a.owner)}</span> · ${T("dl")} ${esc(dlShow(a.deadline))}</div></div>
+    </div>`).join("") || '<p class="sec-note">' + T("noCrit") + '</p>';
+}
+
+function tiles(){
+  $("tiles").innerHTML = D.coreMetrics.map(k => {
+    const v = cur[k];
+    const val = v == null
+      ? '<span style="font-size:15px;font-weight:500;color:var(--text-muted)">' + T("awaiting") + '</span>'
+      : Number(v).toLocaleString(isDE() ? "de-DE" : "en-US");
+    return '<div class="card tile"><div class="lab">' + T("lbl")[k] + '</div>' +
+      '<div class="val">' + val + '</div>' +
+      '<div class="ctx">' + (v == null ? T("awaitingCtx") : "") + '</div></div>';
+  }).join("");
+}
+
+const prioPill = p => {
+  const w = T("prio")[p] || p;
+  return p === "critical" ? '<span class="pill crit">' + w + '</span>'
+    : p === "high" ? '<span class="pill hi">' + w + '</span>' : '<span class="pill">' + w + '</span>';
+};
+
+function plans(){
+  const th = T("th");
+  $("shortPlan").innerHTML =
+    `<tr><th>${th.what}</th><th>${th.deadline}</th><th>${th.owner}</th><th>${th.state}</th><th>${th.prio}</th></tr>` +
+    (D.plans.shortTerm||[]).map(p => "<tr><td>" + esc(L(p,"item")) + "</td><td class='num'>" + esc(dlShow(p.deadline)) +
+      "</td><td><span class='who " + esc(p.owner) + "'>" + esc(p.owner) + "</span></td><td>" + esc(L(p,"state")) +
+      "</td><td>" + prioPill(p.priority) + "</td></tr>").join("");
+  $("longPlan").innerHTML =
+    `<tr><th>${th.goal}</th><th>${th.why}</th><th>${th.horizon}</th></tr>` +
+    (D.plans.longTerm||[]).map(p => "<tr><td><strong>" + esc(L(p,"item")) + "</strong></td><td>" + esc(L(p,"why")) +
+      "</td><td class='num'>" + esc(T("hor")[p.horizon] || p.horizon) + "</td></tr>").join("");
+}
+
+let winsShown = 25;
+function winsBox(){
+  const th = T("th");
+  const all = D.wins.slice().reverse();
+  const page = all.slice(0, winsShown);
+  const docLink = w => w.doc
+    ? ' <a class="win-doc" href="#/docs/' + encodeURI(w.doc) + '">' + esc(isDE() ? "Doku ansehen" : "read the doc") + '</a>'
+    : "";
+  $("winsBox").innerHTML = `<tr><th>${th.date}</th><th>${th.area}</th><th>${th.shipped}</th></tr>` +
+    page.map(w => "<tr><td class='num'>" + w.d + "</td><td><strong>" +
+      esc(w.area||"") + "</strong></td><td>" + esc(L(w,"text")) + docLink(w) + "</td></tr>").join("");
+  const left = all.length - page.length;
+  $("winsMore").innerHTML = left > 0
+    ? '<button class="pill-btn" id="winsMoreBtn">' + T("more_wins") + ' (' + left + ')</button>'
+    : "";
+  const btn = document.getElementById("winsMoreBtn");
+  if (btn) btn.onclick = () => { winsShown += 25; winsBox(); };
+}
+
+function tasks(){
+  const th = T("th");
+  const open = D.taskList.filter(t => t.status === "open");
+  $("tasks").innerHTML = `<tr><th>${th.owner}</th><th>${th.task}</th><th>${th.area}</th><th>${th.effort}</th></tr>` +
+    open.map(t => "<tr><td><span class='who " + esc(t.who) + "'>" + esc(t.who) + "</span></td><td>" +
+      (t.stale ? "<strong style='color:var(--critical)'>[" + T("carried") + t.age + "×] </strong>" : "") +
+      esc(L(t,"text")) + "</td><td>" + esc(t.cat) + "</td><td>" + (T("effw")[t.weight]||t.weight) + "</td></tr>").join("");
+}
+
+function foot(){
+  $("foot").innerHTML = T("foot1") + "<br>" + T("foot2") +
+    (D.operators||[]).map(o => "<span class='who " + o.tag + "'>" + o.tag + "</span> " + esc(o.name) + " — " + esc(L(o,"role"))).join(" · ");
+}
+
+function draw(){ score(); alerts(); tiles(); plans(); winsBox(); tasks(); foot(); }
+applyLang(); draw();
+})();
+</script>
+<script>
+/* ── Knowledge tab: live file manager over /os/api/knowledge ──────────────── */
+(function(){
+  const $k = id => document.getElementById(id);
+  const T = k => window.OS_T(k);
+  const API = "/os/api/knowledge";
+  let files = [], current = null, isNew = false, maxChars = 200000;
+
+  const fmtDate = iso => iso ? iso.slice(0, 16).replace("T", " ") : "";
+
+  async function refresh(selectName){
+    let res;
+    try {
+      res = await fetch(API, { headers: { "Accept": "application/json" } });
+      if (!res.ok) throw new Error(res.status);
+    } catch {
+      $k("kList").innerHTML = '<div class="d-empty">' + T("k_offline") + '</div>';
+      return;
+    }
+    const data = await res.json();
+    files = data.files || [];
+    maxChars = data.maxChars || maxChars;
+    const used = data.totalChars || 0;
+    $k("kMeter").style.width = Math.min(100, used / maxChars * 100) + "%";
+    $k("kBudget").textContent = T("k_budget")(used, maxChars);
+    renderList();
+    if (selectName) {
+      const f = files.find(x => x.name === selectName);
+      if (f) open(f.name);
+    }
+  }
+
+  function renderList(){
+    $k("kList").innerHTML = files.map(f => `
+      <div class="k-file${f.name === current ? " on" : ""}" data-n="${encodeURIComponent(f.name)}">
+        <div><div class="nm">${f.name.replace(/[&<>]/g,"")}</div>
+        <div class="mt">${f.chars.toLocaleString()}${T("k_chars")} · ${fmtDate(f.mtime)}</div></div>
+        <span class="pill ${f.loaded ? "ok" : ""}">${f.loaded ? T("k_active") : T("k_skipped")}</span>
+      </div>`).join("");
+    $k("kList").querySelectorAll(".k-file").forEach(el => {
+      el.onclick = () => open(decodeURIComponent(el.dataset.n));
+    });
+  }
+
+  async function open(name){
+    const res = await fetch(API + "/file?name=" + encodeURIComponent(name));
+    if (!res.ok) return;
+    current = name; isNew = false;
+    $k("kName").value = name;
+    $k("kName").readOnly = true;
+    $k("kEd").value = await res.text();
+    $k("kStatus").textContent = "";
+    $k("kDel").disabled = false;
+    $k("kSave").disabled = false;
+    renderList();
+  }
+
+  function fresh(){
+    current = null; isNew = true;
+    $k("kName").value = "20-";
+    $k("kName").readOnly = false;
+    $k("kEd").value = "";
+    $k("kStatus").textContent = "";
+    $k("kDel").disabled = true;
+    $k("kSave").disabled = false;
+    renderList();
+    $k("kName").focus();
+  }
+
+  async function save(){
+    const name = $k("kName").value.trim();
+    const body = $k("kEd").value;
+    const st = $k("kStatus");
+    st.className = "k-status";
+    try {
+      const res = await fetch(API + "/file?name=" + encodeURIComponent(name), {
+        method: "PUT", headers: { "Content-Type": "text/plain; charset=utf-8" }, body,
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.status);
+      st.textContent = T("k_saved");
+      await refresh(name);
+    } catch (e) {
+      st.className = "k-status err";
+      st.textContent = T("k_err") + e.message;
+    }
+  }
+
+  async function del(){
+    if (!current || !confirm(T("k_confirm"))) return;
+    const st = $k("kStatus");
+    st.className = "k-status";
+    try {
+      const res = await fetch(API + "/file?name=" + encodeURIComponent(current), { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.status);
+      st.textContent = T("k_deleted");
+      current = null;
+      $k("kName").value = ""; $k("kEd").value = "";
+      $k("kDel").disabled = true;
+      await refresh();
+    } catch (e) {
+      st.className = "k-status err";
+      st.textContent = T("k_err") + e.message;
+    }
+  }
+
+  function applyKnowLang(){
+    $k("kIntro").innerHTML = T("k_intro");
+    $k("kNew").textContent = T("k_new");
+    $k("kSave").textContent = T("k_save");
+    $k("kDel").textContent = T("k_del");
+    $k("kHint").textContent = T("k_hint");
+    if (!current && !isNew) {
+      $k("kName").value = ""; $k("kName").readOnly = true;
+      $k("kEd").value = ""; $k("kEd").placeholder = T("k_pick");
+      $k("kDel").disabled = true; $k("kSave").disabled = true;
+    }
+  }
+
+  $k("kNew").onclick = fresh;
+  $k("kSave").onclick = save;
+  $k("kDel").onclick = del;
+  addEventListener("langchange", applyKnowLang);
+  applyKnowLang();
+
+  let loadedOnce = false;
+  window.OS_KNOW_SHOW = () => {
+    if (!loadedOnce) { loadedOnce = true; refresh(); }
+  };
+})();
+</script>
+<script>
+/* ── Router + Docs reader — bilingual (inherited from segnals-os) ─────────── */
+(function(){
+  const DOCS = ((window.NL_DATA || {}).docs || []);
+  const byId = Object.fromEntries(DOCS.map(d => [d.id, d]));
+  const $d = id => document.getElementById(id);
+  const esc2 = t => String(t == null ? "" : t)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+  const de = () => window.OS_LANG !== "en";
+  const DT = d => de() && d.title_de ? d.title_de : d.title;
+  const DS = d => de() && d.summary_de ? d.summary_de : d.summary;
+  const DH = d => de() && d.html_de ? d.html_de : d.html;
+  const DTOC = d => de() && d.toc_de ? d.toc_de : d.toc;
+  const DW = d => de() && d.words_de ? d.words_de : d.words;
+  const enOnly = d => de() && !d.html_de;
+  const CATS_DE = {"How Hey Jesus works":"So funktioniert Hey Jesus","Plan & Roadmap":"Plan & Roadmap",
+    "Product":"Produkt","Knowledge & Tuning":"Wissen & Tuning","Tech":"Technik","Operating":"Betrieb"};
+  const CN = c => de() ? (CATS_DE[c] || c) : c;
+  const S = () => de()
+    ? {docs:"Doku", intro:"Alles darüber, wie Hey Jesus funktioniert und wie man ihn betreibt — die Sprachpipeline, das Wissen, die Technik, die Pläne. In einfacher Sprache. Einträge mit dem Vermerk „Englisch\" sind Arbeitsdokumente ohne Übersetzung.",
+       none:"Noch keine Dokumente. Markdown in einem Bereichsordner ablegen und neu bauen.",
+       nomatch:"Kein Treffer.", onpage:"Auf dieser Seite", forr:"Für: ", prev:"← Zurück", next:"Weiter →",
+       min:" Min.", words:" Wörter", en:"Englisch"}
+    : {docs:"Docs", intro:"Everything about how Hey Jesus works and how to run it — the voice pipeline, the knowledge, the tech, the plans. Written in plain language. Entries marked \"English\" are working documents without a translation.",
+       none:"No documents yet. Add markdown in any section folder and rebuild.",
+       nomatch:"No match.", onpage:"On this page", forr:"For: ", prev:"← Previous", next:"Next →",
+       min:" min", words:" words", en:"English"};
+
+  function groups(list){
+    const g = {};
+    list.forEach(d => { (g[d.category] = g[d.category] || []).push(d); });
+    return g;
+  }
+
+  function sidebar(active, filter){
+    const q = (filter || "").trim().toLowerCase();
+    const list = q
+      ? DOCS.filter(d => (d.title + " " + (d.title_de||"") + " " + d.summary + " " + (d.summary_de||"") + " " + d.category).toLowerCase().includes(q))
+      : DOCS;
+    if (!list.length) { $d("dNav").innerHTML = '<div class="d-empty">' + S().nomatch + '</div>'; return; }
+    const g = groups(list);
+    $d("dNav").innerHTML = Object.keys(g).map(cat =>
+      `<div class="d-cat">${esc2(CN(cat))}</div>` +
+      g[cat].map(d => `<a class="d-link" href="#/docs/${encodeURI(d.id)}"${
+        d.id === active ? ' aria-current="page"' : ""}>${esc2(DT(d))}</a>`).join("")
+    ).join("");
+  }
+
+  function meta(d){
+    return DW(d).toLocaleString() + S().words + " · ~" + Math.max(1, Math.round(DW(d)/220)) + S().min
+      + (enOnly(d) ? " · " + S().en : "");
+  }
+
+  function index(){
+    $d("dCrumb").innerHTML = "";
+    $d("dToc").innerHTML = "";
+    $d("dFoot").innerHTML = "";
+    if (!DOCS.length){
+      $d("dBody").innerHTML = "<h1>" + S().docs + '</h1><p class="d-empty">' + S().none + "</p>";
+      return;
+    }
+    const g = groups(DOCS);
+    $d("dBody").innerHTML = "<h1>" + S().docs + "</h1><p>" + S().intro + "</p>"
+      + Object.keys(g).map(cat => `<h2 id="${cat.toLowerCase()}">${esc2(CN(cat))}</h2>
+        <div class="d-cards">${g[cat].map(d => `<a class="d-card" href="#/docs/${encodeURI(d.id)}">
+          <div class="t">${esc2(DT(d))}</div>
+          <div class="s">${esc2(DS(d))}</div>
+          <div class="m">${meta(d)}</div>
+        </a>`).join("")}</div>`).join("");
+  }
+
+  function reader(id){
+    const d = byId[id];
+    if (!d) { location.hash = "#/docs"; return; }
+    const i = DOCS.indexOf(d), prev = DOCS[i-1], next = DOCS[i+1];
+
+    $d("dCrumb").innerHTML = `<a href="#/docs">${S().docs}</a><span>›</span>`
+      + `<a href="#/docs">${esc2(CN(d.category))}</a><span>›</span><span>${esc2(DT(d))}</span>`;
+    $d("dBody").innerHTML = DH(d);
+    const toc = DTOC(d);
+    $d("dToc").innerHTML = toc.length
+      ? `<div class="k">${S().onpage}</div>` + toc.map(t =>
+          `<a href="#${t.id}" data-h="${t.id}"${t.level===3?' class="l3"':""}>${esc2(t.text)}</a>`).join("")
+      : "";
+    $d("dFoot").innerHTML =
+      `<div class="d-meta"><span>${esc2(CN(d.category))}</span>`
+      + (d.audience ? `<span>${S().forr}${esc2(d.audience)}</span>` : "")
+      + `<span>${meta(d)}</span>`
+      + `<span>${esc2(d.id)}.md</span></div>`
+      + `<div class="d-pn">`
+      + (prev ? `<a href="#/docs/${encodeURI(prev.id)}"><span class="l">${S().prev}</span>
+            <span class="t">${esc2(DT(prev))}</span></a>` : "<span style='flex:1'></span>")
+      + (next ? `<a class="nx" href="#/docs/${encodeURI(next.id)}"><span class="l">${S().next}</span>
+            <span class="t">${esc2(DT(next))}</span></a>` : "<span style='flex:1'></span>")
+      + `</div>`;
+    spy();
+  }
+
+  let heads = [], tocLinks = [];
+  function spy(){
+    heads = [...$d("dBody").querySelectorAll("h2[id],h3[id]")];
+    tocLinks = [...$d("dToc").querySelectorAll("a[data-h]")];
+    onScroll();
+  }
+  function onScroll(){
+    if (!heads.length) return;
+    let cur = heads[0].id;
+    for (const h of heads) { if (h.getBoundingClientRect().top <= 90) cur = h.id; }
+    tocLinks.forEach(a => a.classList.toggle("on", a.dataset.h === cur));
+  }
+  addEventListener("scroll", onScroll, { passive:true });
+
+  function route(){
+    const h = location.hash.replace(/^#\/?/, "");
+    const docs = h === "docs" || h.startsWith("docs/");
+    const know = h === "knowledge";
+    document.body.classList.toggle("docsmode", docs);
+    $d("view-dash").hidden = docs || know;
+    $d("view-docs").hidden = !docs;
+    $d("view-know").hidden = !know;
+    const target = docs ? "docs" : know ? "know" : "dash";
+    [...$d("nav").children].forEach(b =>
+      b.dataset.view === target
+        ? b.setAttribute("aria-current","page") : b.removeAttribute("aria-current"));
+    if (know && window.OS_KNOW_SHOW) window.OS_KNOW_SHOW();
+    if (!docs) return;
+    const id = h.startsWith("docs/") ? decodeURI(h.slice(5)) : "";
+    sidebar(id, $d("dSearch").value);
+    id ? reader(id) : index();
+    if (!location.hash.includes("#", 1)) scrollTo(0, 0);
+  }
+
+  $d("nav").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    location.hash = b.dataset.view === "docs" ? "#/docs" : b.dataset.view === "know" ? "#/knowledge" : "#/";
+  });
+  $d("dSearch").addEventListener("input", () => {
+    const h = location.hash.replace(/^#\/?/, "");
+    sidebar(h.startsWith("docs/") ? decodeURI(h.slice(5)) : "", $d("dSearch").value);
+  });
+  addEventListener("hashchange", route);
+  addEventListener("langchange", route);
+  route();
+})();
+</script>
+</body>
+</html>
