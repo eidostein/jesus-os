@@ -9,10 +9,12 @@ updated: 2026-08-12
 
 # The 30 voices — and how the Jesus voice was chosen
 
-The Gemini Live model ships **30 prebuilt voices**. All of them are selectable
-on the homepage, so anyone can find the Jesus that sounds right to them. The
-list itself is served by the backend (`GET /api/config`), so the site and this
-page can never disagree.
+The Gemini Live model ships **30 prebuilt voices**. During the evaluation
+phase they were all selectable on the homepage; since 2026-08-13 the site
+speaks with **one voice** — the selector was removed so every visitor meets
+the same Jesus (decision D9). The full list is still served by the backend
+(`GET /api/config`), so re-enabling a picker later is a UI change, not an
+architecture change.
 
 ## The default
 

@@ -1,44 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { VoiceOrb } from "@/components/VoiceOrb";
 import { LiveClient, type LiveStatus, type TranscriptEntry } from "@/lib/live-client";
 import { useI18n } from "@/i18n";
 
-interface Voice {
-  name: string;
-  tone: string;
-}
-
 export function TalkSection() {
   const { t, lang } = useI18n();
-  const [voices, setVoices] = useState<Voice[]>([]);
-  const [voice, setVoice] = useState<string>("Algieba");
   const [status, setStatus] = useState<LiveStatus>("idle");
   const [errorKey, setErrorKey] = useState<"errorMic" | "errorConnect" | null>(null);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const clientRef = useRef<LiveClient | null>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetch("/api/config")
-      .then((r) => r.json())
-      .then((cfg) => {
-        setVoices(cfg.voices ?? []);
-        if (cfg.defaultVoice) setVoice(cfg.defaultVoice);
-      })
-      .catch(() => {
-        // Selector stays with the default voice if config can't be loaded.
-        setVoices([{ name: "Algieba", tone: "Smooth · Calm" }]);
-      });
-  }, []);
 
   useEffect(() => {
     const el = transcriptRef.current;
@@ -71,7 +44,8 @@ export function TalkSection() {
       },
     });
     clientRef.current = client;
-    await client.start(voice, lang);
+    // No voice is sent — the server speaks with its configured voice (Algieba).
+    await client.start(lang);
   };
 
   const handleStop = () => {
@@ -84,7 +58,7 @@ export function TalkSection() {
   const connecting = status === "connecting";
 
   return (
-    <section id="talk" className="container pb-24">
+    <section id="talk" className="container scroll-mt-6 pb-24">
       {/* Framed orb — the "viewfinder" card from the design */}
       <div className="relative mx-auto max-w-3xl rounded-3xl border border-border/60 bg-card/40 glow-gold">
         {/* Corner brackets */}
@@ -107,45 +81,26 @@ export function TalkSection() {
             {connecting ? t("connecting") : live ? t("live") : errorKey ? t(errorKey) : t("idleHint")}
           </p>
 
-          <div className="flex w-full max-w-md flex-col items-center gap-3 sm:flex-row">
-            <Select value={voice} onValueChange={setVoice} disabled={live || connecting}>
-              <SelectTrigger
-                className="w-full bg-background/70 backdrop-blur sm:flex-1"
-                aria-label={t("voiceLabel")}
-              >
-                <SelectValue placeholder={t("voiceLabel")} />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {voices.map((v) => (
-                  <SelectItem key={v.name} value={v.name}>
-                    <span className="font-medium">{v.name}</span>
-                    <span className="text-muted-foreground">· {v.tone}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {live || connecting ? (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleStop}
-                className="w-full border-gold/50 text-gold hover:bg-gold/10 sm:w-auto"
-              >
-                {connecting ? <Loader2 className="animate-spin" /> : <Square />}
-                {t("end")}
-              </Button>
-            ) : (
-              <Button
-                size="lg"
-                onClick={handleStart}
-                className="w-full bg-gold text-primary-foreground hover:bg-gold-bright sm:w-auto"
-              >
-                <Mic />
-                {t("begin")}
-              </Button>
-            )}
-          </div>
+          {live || connecting ? (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleStop}
+              className="w-full max-w-xs border-gold/50 text-gold hover:bg-gold/10 sm:w-auto"
+            >
+              {connecting ? <Loader2 className="animate-spin" /> : <Square />}
+              {t("end")}
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleStart}
+              className="w-full max-w-xs bg-gold text-primary-foreground hover:bg-gold-bright sm:w-auto"
+            >
+              <Mic />
+              {t("begin")}
+            </Button>
+          )}
         </div>
       </div>
 

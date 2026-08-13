@@ -70,6 +70,16 @@ nicht über einen Konfigurationsschalter — die Live-API bietet keinen
 Sprechtempo-Parameter, und Native-Audio-Modelle folgen Tempo-Anweisungen im
 Prompt gut. Besucher können weiterhin jede der 30 Stimmen pro Gespräch wählen.
 
+## D9 — Eine Stimme, kein Wähler auf der Homepage (13.08.2026)
+
+Der 30-Stimmen-Wähler hat seinen Zweck erfüllt — der Partner konnte die
+Kandidaten anhören und Algieba küren (D8). Für Besucher war er Reibung und
+Verwässerung: ein Menü technischer Stimmennamen vor dem ersten Wort, und ein
+anderer Jesus je nach Wahl. Entfernt. Die Homepage hat jetzt genau eine
+Handlung: Knopf drücken, sprechen. Der Browser sendet gar keine Stimme mehr;
+der Server spricht mit `DEFAULT_VOICE`. Die Stimmenliste bleibt im Backend
+(`/api/config`) — ein Wähler kann als reine UI-Änderung zurückkehren.
+
 ## D7 — Lebendes Wissen liegt außerhalb des Repo-Checkouts (12.08.2026)
 
 Deploys machen `git reset --hard`; Änderungen aus dem Wissen-Tab müssen das

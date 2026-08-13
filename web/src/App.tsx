@@ -25,10 +25,13 @@ export default function App() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
+              size="sm"
               onClick={scrollToTalk}
-              className="hidden rounded-full border-gold/60 bg-transparent px-5 text-gold hover:bg-gold/10 hover:text-gold-bright sm:inline-flex"
+              className="h-9 rounded-full border-gold/60 bg-transparent px-4 text-gold hover:bg-gold/10 hover:text-gold-bright sm:h-10 sm:px-5"
             >
-              {t("startTalking")}
+              {/* Short label on phones so the header never wraps or overlaps */}
+              <span className="sm:hidden">{t("startTalkingShort")}</span>
+              <span className="hidden sm:inline">{t("startTalking")}</span>
             </Button>
             <Button
               variant="outline"

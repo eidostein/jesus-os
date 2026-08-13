@@ -69,6 +69,16 @@ switch — the Live API exposes no speaking-rate parameter, and native-audio
 models follow prompt-level pacing direction well. Visitors can still pick any
 of the 30 voices per conversation.
 
+## D9 — One voice, no homepage selector (2026-08-13)
+
+The 30-voice selector served its purpose — it let the partner audition
+candidates and crown Algieba (D8). For visitors it was friction and
+dilution: a menu of technical voice names before the first word, and a
+different Jesus for every choice. Removed. The homepage now has exactly one
+action: press the button, speak. The browser no longer sends a voice at all;
+the server speaks with `DEFAULT_VOICE`. The voice list stays in the backend
+(`/api/config`), so a picker can return as a pure UI change if ever wanted.
+
 ## D7 — Live knowledge lives outside the repo checkout (2026-08-12)
 
 Deploys run `git reset --hard`; edits made in the Knowledge tab must survive

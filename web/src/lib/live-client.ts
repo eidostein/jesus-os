@@ -110,7 +110,7 @@ export class LiveClient {
     return { mic: this.micLevel, out };
   }
 
-  async start(voice: string, language: string): Promise<void> {
+  async start(language: string): Promise<void> {
     if (this.status === "connecting" || this.status === "live") return;
     this.setStatus("connecting");
     try {
@@ -138,7 +138,7 @@ export class LiveClient {
       this.outGain.connect(this.analyser);
       this.analyser.connect(this.ctx.destination);
 
-      await this.openSocket(voice, language);
+      await this.openSocket(language);
 
       this.micSource = this.ctx.createMediaStreamSource(this.micStream);
       this.micNode = new AudioWorkletNode(this.ctx, "pcm-capture");
@@ -162,7 +162,7 @@ export class LiveClient {
     }
   }
 
-  private openSocket(voice: string, language: string): Promise<void> {
+  private openSocket(language: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const proto = location.protocol === "https:" ? "wss" : "ws";
       const ws = new WebSocket(`${proto}://${location.host}/ws`);
@@ -174,7 +174,8 @@ export class LiveClient {
         reject(new Error("timeout"));
       }, 15000);
 
-      ws.onopen = () => ws.send(JSON.stringify({ type: "start", voice, language }));
+      // No voice field: the server chooses its configured default voice.
+      ws.onopen = () => ws.send(JSON.stringify({ type: "start", language }));
       ws.onmessage = (e) => {
         if (typeof e.data === "string") {
           const msg = JSON.parse(e.data);

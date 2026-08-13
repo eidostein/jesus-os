@@ -5,10 +5,12 @@ summary: Jede Stimme des Modells, warum Charon der Standard ist und wie man ihn 
 
 # Die 30 Stimmen — und wie die Jesus-Stimme gewählt wurde
 
-Das Gemini-Live-Modell bringt **30 vorgefertigte Stimmen** mit. Alle sind auf
-der Homepage wählbar — jeder kann den Jesus finden, der für ihn richtig
-klingt. Die Liste liefert das Backend (`GET /api/config`), Website und diese
-Seite können sich also nie widersprechen.
+Das Gemini-Live-Modell bringt **30 vorgefertigte Stimmen** mit. In der
+Evaluationsphase waren alle auf der Homepage wählbar; seit dem 13.08.2026
+spricht die Seite mit **einer Stimme** — die Auswahl wurde entfernt, damit
+jeder Besucher demselben Jesus begegnet (Entscheidung D9). Die vollständige
+Liste liefert weiterhin das Backend (`GET /api/config`) — einen Wähler später
+zu reaktivieren ist eine UI-Änderung, keine Architekturänderung.
 
 ## Der Standard
 
