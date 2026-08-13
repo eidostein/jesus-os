@@ -60,6 +60,15 @@ Same dashboard.html engine, build.py, bilingual docs convention
 env, never in git). Proven system, zero relearning cost. Additions: a
 Knowledge tab (live file management) and the gold theme.
 
+## D8 — Algieba is the Jesus voice; pace directed via instruction (2026-08-13)
+
+The partner listened to the candidates and chose **Algieba** (smooth · calm)
+as the default. The requested slower, calmer, more relaxed delivery is done
+through the style instruction (`10-conversation-style.md`), not a config
+switch — the Live API exposes no speaking-rate parameter, and native-audio
+models follow prompt-level pacing direction well. Visitors can still pick any
+of the 30 voices per conversation.
+
 ## D7 — Live knowledge lives outside the repo checkout (2026-08-12)
 
 Deploys run `git reset --hard`; edits made in the Knowledge tab must survive

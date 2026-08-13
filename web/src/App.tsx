@@ -15,16 +15,18 @@ export default function App() {
     <div className="relative overflow-x-clip">
       {/* Header */}
       <header className="absolute inset-x-0 top-0 z-20">
-        <div className="container flex items-center justify-between py-5">
-          <a href="/" className="flex items-center gap-2.5 text-gold">
-            <StarLogo />
-            <span className="font-serif text-2xl font-semibold tracking-wide">HeyJesus.ai</span>
+        <div className="container flex items-center justify-between gap-3 py-4 sm:py-5">
+          <a href="/" className="flex min-w-0 items-center gap-2 text-gold sm:gap-2.5">
+            <StarLogo className="size-6 shrink-0 sm:size-7" />
+            <span className="truncate font-serif text-xl font-semibold tracking-wide sm:text-2xl">
+              HeyJesus.ai
+            </span>
           </a>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Button
               variant="outline"
               onClick={scrollToTalk}
-              className="rounded-full border-gold/60 bg-transparent px-5 text-gold hover:bg-gold/10 hover:text-gold-bright"
+              className="hidden rounded-full border-gold/60 bg-transparent px-5 text-gold hover:bg-gold/10 hover:text-gold-bright sm:inline-flex"
             >
               {t("startTalking")}
             </Button>

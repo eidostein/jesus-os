@@ -61,6 +61,15 @@ Gleiche dashboard.html-Engine, build.py, Zweisprachen-Konvention
 Env, nie in Git). Bewährtes System, null Umlernkosten. Ergänzt um: einen
 Wissen-Tab (Live-Dateiverwaltung) und das goldene Theme.
 
+## D8 — Algieba ist die Jesus-Stimme; Tempo per Instruktion (13.08.2026)
+
+Der Partner hat die Kandidaten angehört und **Algieba** (weich · ruhig) als
+Standard gewählt. Die gewünschte langsamere, ruhigere, entspanntere
+Sprechweise läuft über die Stil-Instruktion (`10-conversation-style.md`),
+nicht über einen Konfigurationsschalter — die Live-API bietet keinen
+Sprechtempo-Parameter, und Native-Audio-Modelle folgen Tempo-Anweisungen im
+Prompt gut. Besucher können weiterhin jede der 30 Stimmen pro Gespräch wählen.
+
 ## D7 — Lebendes Wissen liegt außerhalb des Repo-Checkouts (12.08.2026)
 
 Deploys machen `git reset --hard`; Änderungen aus dem Wissen-Tab müssen das

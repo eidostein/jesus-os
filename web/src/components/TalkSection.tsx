@@ -20,7 +20,7 @@ interface Voice {
 export function TalkSection() {
   const { t, lang } = useI18n();
   const [voices, setVoices] = useState<Voice[]>([]);
-  const [voice, setVoice] = useState<string>("Charon");
+  const [voice, setVoice] = useState<string>("Algieba");
   const [status, setStatus] = useState<LiveStatus>("idle");
   const [errorKey, setErrorKey] = useState<"errorMic" | "errorConnect" | null>(null);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
@@ -36,7 +36,7 @@ export function TalkSection() {
       })
       .catch(() => {
         // Selector stays with the default voice if config can't be loaded.
-        setVoices([{ name: "Charon", tone: "Deep · Informative" }]);
+        setVoices([{ name: "Algieba", tone: "Smooth · Calm" }]);
       });
   }, []);
 
@@ -97,11 +97,12 @@ export function TalkSection() {
           <span key={pos} className={`pointer-events-none absolute size-6 border-gold ${pos}`} />
         ))}
 
-        <div className="aspect-square sm:aspect-[16/10]">
+        <div className="aspect-[4/3] sm:aspect-[16/10]">
           <VoiceOrb getLevels={getLevels} active={live} />
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-4 p-6 sm:p-8">
+        {/* Static below the orb on phones; overlaid on the orb's lower edge on larger screens */}
+        <div className="flex flex-col items-center gap-4 p-5 pt-0 sm:absolute sm:inset-x-0 sm:bottom-0 sm:p-8">
           <p className="text-center text-sm text-muted-foreground" role="status">
             {connecting ? t("connecting") : live ? t("live") : errorKey ? t(errorKey) : t("idleHint")}
           </p>

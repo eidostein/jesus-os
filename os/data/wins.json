@@ -21,6 +21,10 @@
     { "d": "2026-08-12", "area": "os",
       "text": "This dashboard: jesus-os inherited the segnals-os engine — goals, tasks, achievements, bilingual docs, and a live Knowledge tab.",
       "text_de": "Dieses Dashboard: jesus-os erbte die segnals-os-Engine — Ziele, Aufgaben, Erfolge, zweisprachige Doku und ein Live-Wissen-Tab.",
-      "doc": "20-Knowledge/README" }
+      "doc": "20-Knowledge/README" },
+    { "d": "2026-08-13", "area": "voice",
+      "text": "The partner crowned the Jesus voice: Algieba (smooth · calm) is now the default, slowed and softened via the style instruction. Mobile layout polished the same day.",
+      "text_de": "Der Partner kürte die Jesus-Stimme: Algieba (weich · ruhig) ist jetzt Standard, verlangsamt und weicher über die Stil-Instruktion. Mobil-Layout am selben Tag poliert.",
+      "doc": "10-Product/voices" }
   ]
 }

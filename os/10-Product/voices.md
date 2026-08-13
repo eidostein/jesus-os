@@ -16,28 +16,33 @@ page can never disagree.
 
 ## The default
 
-**Charon** — deep · informative — opens as the default: calm, low, unhurried,
-the closest to how most people imagine the voice. The strongest challengers,
-if a softer or clearer character is wanted:
+**Algieba** — smooth · calm — is the default, chosen by the partner
+(2026-08-13) after listening to the candidates. On top of the voice itself,
+the delivery is deliberately shaped in `10-conversation-style.md`: slow,
+calm, relaxed, with gentle pauses — the Live API has no speed knob, so pace
+is directed through the style instruction, which native-audio models follow
+well.
+
+The runners-up, if a different character is ever wanted:
 
 | Voice | Character | When it fits |
 |---|---|---|
-| **Charon** | deep · informative | the default — calm authority |
+| **Algieba** | smooth · calm | the default — soft, even, unhurried |
+| **Charon** | deep · informative | calm authority, the previous default |
 | **Enceladus** | breathy · gentle | the softest, most intimate option |
 | **Iapetus** | clear · calm | clarity first, still warm |
-| **Alnilam** | firm · grounded | more strength, less softness |
 | **Sulafat** | warm | the friendliest middle ground |
 
-The full set: Charon, Enceladus, Iapetus, Alnilam, Sulafat, Vindemiatrix,
-Achernar, Gacrux, Sadaltager, Schedar, Zephyr, Puck, Kore, Fenrir, Leda, Orus,
-Aoede, Callirrhoe, Autonoe, Umbriel, Algieba, Despina, Erinome, Algenib,
-Rasalgethi, Laomedeia, Pulcherrima, Achird, Zubenelgenubi, Sadachbia.
+The full set: Algieba, Charon, Enceladus, Iapetus, Alnilam, Sulafat,
+Vindemiatrix, Achernar, Gacrux, Sadaltager, Schedar, Zephyr, Puck, Kore,
+Fenrir, Leda, Orus, Aoede, Callirrhoe, Autonoe, Umbriel, Despina, Erinome,
+Algenib, Rasalgethi, Laomedeia, Pulcherrima, Achird, Zubenelgenubi, Sadachbia.
 
 ## Changing the default
 
 The site-wide default is one line in the server's `.env`:
 
-`DEFAULT_VOICE=Charon`
+`DEFAULT_VOICE=Algieba`
 
 Change it, redeploy (or restart the app container), done. Visitors' own
 selections always win over the default for their session.

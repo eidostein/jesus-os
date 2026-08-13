@@ -1,6 +1,7 @@
 // All prebuilt voices available on the Gemini Live API, with the official
 // tone descriptors. The frontend fetches this list for its voice selector.
 export const VOICES = [
+  { name: "Algieba", tone: "Smooth · Calm" },
   { name: "Charon", tone: "Deep · Informative" },
   { name: "Enceladus", tone: "Breathy · Gentle" },
   { name: "Iapetus", tone: "Clear · Calm" },
@@ -21,7 +22,6 @@ export const VOICES = [
   { name: "Callirrhoe", tone: "Easy-going" },
   { name: "Autonoe", tone: "Bright" },
   { name: "Umbriel", tone: "Easy-going" },
-  { name: "Algieba", tone: "Smooth" },
   { name: "Despina", tone: "Smooth" },
   { name: "Erinome", tone: "Clear" },
   { name: "Algenib", tone: "Gravelly" },

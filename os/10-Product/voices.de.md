@@ -12,28 +12,33 @@ Seite können sich also nie widersprechen.
 
 ## Der Standard
 
-**Charon** — tief · sachlich — ist der Standard: ruhig, tief, ohne Eile, am
-nächsten an der Stimme, die sich die meisten vorstellen. Die stärksten
-Herausforderer, falls ein weicherer oder klarerer Charakter gewünscht ist:
+**Algieba** — weich · ruhig — ist der Standard, vom Partner gewählt
+(13.08.2026) nach dem Anhören der Kandidaten. Zusätzlich zur Stimme selbst
+wird die Sprechweise bewusst in `10-conversation-style.md` geformt: langsam,
+ruhig, entspannt, mit sanften Pausen — die Live-API hat keinen
+Geschwindigkeitsregler, das Tempo wird über die Stil-Instruktion gelenkt,
+und Native-Audio-Modelle folgen dem gut.
+
+Die Zweitplatzierten, falls je ein anderer Charakter gewünscht ist:
 
 | Stimme | Charakter | Wann sie passt |
 |---|---|---|
-| **Charon** | tief · sachlich | der Standard — ruhige Autorität |
+| **Algieba** | weich · ruhig | der Standard — sanft, gleichmäßig, ohne Eile |
+| **Charon** | tief · sachlich | ruhige Autorität, der frühere Standard |
 | **Enceladus** | hauchig · sanft | die weichste, intimste Option |
 | **Iapetus** | klar · ruhig | Klarheit zuerst, trotzdem warm |
-| **Alnilam** | fest · geerdet | mehr Kraft, weniger Weichheit |
 | **Sulafat** | warm | die freundlichste Mitte |
 
-Das ganze Set: Charon, Enceladus, Iapetus, Alnilam, Sulafat, Vindemiatrix,
-Achernar, Gacrux, Sadaltager, Schedar, Zephyr, Puck, Kore, Fenrir, Leda, Orus,
-Aoede, Callirrhoe, Autonoe, Umbriel, Algieba, Despina, Erinome, Algenib,
-Rasalgethi, Laomedeia, Pulcherrima, Achird, Zubenelgenubi, Sadachbia.
+Das ganze Set: Algieba, Charon, Enceladus, Iapetus, Alnilam, Sulafat,
+Vindemiatrix, Achernar, Gacrux, Sadaltager, Schedar, Zephyr, Puck, Kore,
+Fenrir, Leda, Orus, Aoede, Callirrhoe, Autonoe, Umbriel, Despina, Erinome,
+Algenib, Rasalgethi, Laomedeia, Pulcherrima, Achird, Zubenelgenubi, Sadachbia.
 
 ## Den Standard ändern
 
 Der seitenweite Standard ist eine Zeile in der `.env` des Servers:
 
-`DEFAULT_VOICE=Charon`
+`DEFAULT_VOICE=Algieba`
 
 Ändern, neu deployen (oder App-Container neu starten), fertig. Die eigene
 Auswahl eines Besuchers gewinnt für seine Sitzung immer über den Standard.

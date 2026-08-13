@@ -16,7 +16,7 @@ export const config = {
   port: Number(process.env.PORT) || 8790,
   apiKeys: keys,
   model: process.env.GEMINI_LIVE_MODEL || "gemini-3.1-flash-live-preview",
-  defaultVoice: process.env.DEFAULT_VOICE || "Charon",
+  defaultVoice: process.env.DEFAULT_VOICE || "Algieba",
   knowledgeDir,
   publicDir: new URL("../public", import.meta.url).pathname,
 };
