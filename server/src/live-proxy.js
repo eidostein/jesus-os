@@ -17,6 +17,18 @@ const LANGUAGE_PREAMBLE = {
 const LANGUAGE_RULE =
   "If the visitor speaks another language at any point, recognize it and answer in that language from then on — always mirror the language the visitor speaks.";
 
+// Appended LAST in the system instruction on purpose: recency gives delivery
+// direction the most weight with native-audio models, and living in code means
+// no knowledge-file edit can accidentally drop it. Measured effect: baseline
+// ~174 words/min without it (normal conversational pace).
+const DELIVERY_RULE =
+  "PACE AND TONE — this rules over everything else: Speak very slowly. " +
+  "Aim for about two thirds of normal conversational speed, like a guided " +
+  "meditation or a blessing spoken at dusk. Keep your voice quiet, low in " +
+  "energy, and deeply calm. Leave a clear, unhurried pause after every " +
+  "sentence. Never speed up, never sound brisk, energetic, or excited — " +
+  "no matter the topic and no matter the language.";
+
 /**
  * Attaches a browser WebSocket to a Gemini Live session.
  *
@@ -79,6 +91,7 @@ export function handleVoiceSocket(client) {
         loadSystemInstruction(config.knowledgeDir),
         LANGUAGE_PREAMBLE[language],
         LANGUAGE_RULE,
+        DELIVERY_RULE,
       ].join("\n\n");
       try {
         session = await connectWithRotation(client, sendJson, { voice, language, systemInstruction });
