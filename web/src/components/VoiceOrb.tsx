@@ -13,10 +13,12 @@ interface VoiceOrbProps {
    swapping that image reshapes the whole graphic. Everything else — palette,
    density, glow, motion — is a dial below. Hand-drawn on canvas, no library.
    ────────────────────────────────────────────────────────────────────────── */
-const FACE_PARTICLES = 2800; // dots forming the face (halved on small screens)
-const DUST_COUNT = 320; // ambient sparkle drifting around the face
-const SAMPLE_SIZE = 256; // resolution at which the map is sampled
+const FACE_PARTICLES = 5200; // dots forming the face (halved on small screens)
+const DUST_COUNT = 460; // ambient sparkle drifting around the face
+const SAMPLE_SIZE = 320; // resolution at which the map is sampled
 const CONTRAST = 2.6; // higher = particles cling tighter to bright contours
+const MIN_DOT_DIST = 1.75; // min spacing between dots in sample px — the "beads on
+// a string" look: dots stay individually visible instead of clumping
 // Palette from the mockup: champagne gold dust, warm amber glow, muted ring.
 const DUST_GOLD = "246, 208, 138";
 const GLOW_WARM = "196, 142, 66";
@@ -86,11 +88,37 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
       const lumAt = (d: Uint8ClampedArray, i: number) =>
         (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
 
+      // Poisson-style spacing: a candidate is rejected when another accepted
+      // dot sits within MIN_DOT_DIST, so lines render as strings of clearly
+      // separate beads — the defining texture of the mockup.
+      // cell = r/√2 guarantees at most one point per cell; neighbours within
+      // two cells cover the full exclusion radius.
+      const cell = MIN_DOT_DIST / Math.SQRT2;
+      const gw = Math.ceil(S / cell);
+      const grid: (FacePoint | undefined)[] = new Array(gw * gw);
+      const farEnough = (px: number, py: number) => {
+        const gx = (px / cell) | 0;
+        const gy = (py / cell) | 0;
+        for (let dy = -2; dy <= 2; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const yy = gy + dy;
+            const xx = gx + dx;
+            if (xx < 0 || yy < 0 || xx >= gw || yy >= gw) continue;
+            const n = grid[yy * gw + xx];
+            if (!n) continue;
+            const nx = ((n.u + 1) / 2) * S;
+            const ny = ((n.v + 1) / 2) * S;
+            if ((nx - px) ** 2 + (ny - py) ** 2 < MIN_DOT_DIST * MIN_DOT_DIST) return false;
+          }
+        }
+        return true;
+      };
+
       const pts: FacePoint[] = [];
       const target = small ? FACE_PARTICLES / 2 : FACE_PARTICLES;
-      const sprinkle = Math.floor(target * 0.14); // soft fill inside the glow
+      const sprinkle = Math.floor(target * 0.08); // soft fill inside the glow
       let guard = 0;
-      while (pts.length < target && guard++ < 800_000) {
+      while (pts.length < target && guard++ < 1_200_000) {
         const px = Math.random() * S;
         const py = Math.random() * S;
         const i = ((py | 0) * S + (px | 0)) * 4;
@@ -100,15 +128,17 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
         const p = wantSprinkle
           ? Math.pow(l, 3) * 0.5
           : Math.pow(Math.min(1, edge * 3.2), CONTRAST * 0.6);
-        if (Math.random() < p) {
+        if (Math.random() < p && farEnough(px, py)) {
           const strength = wantSprinkle ? l * 0.5 : Math.min(1, 0.35 + edge * 2.6);
-          pts.push({
+          const pt: FacePoint = {
             u: (px / S) * 2 - 1,
             v: (py / S) * 2 - 1,
             l: strength,
-            size: 0.45 + Math.random() * 0.95 + strength * 0.7,
+            size: 0.45 + Math.random() * 0.4 + strength * 0.3,
             phase: Math.random() * Math.PI * 2,
-          });
+          };
+          pts.push(pt);
+          grid[((py / cell) | 0) * gw + ((px / cell) | 0)] = pt;
         }
       }
       facePts = pts;
@@ -188,8 +218,8 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
       for (const p of facePts) {
         const x = cx + p.u * F + Math.sin(t * 0.9 + p.phase) * jitter;
         const y = cy + p.v * F + Math.cos(t * 0.8 + p.phase * 1.3) * jitter;
-        const tw = 0.62 + 0.38 * Math.sin(t * 2.1 + p.phase);
-        const alpha = (0.3 + p.l * 0.7) * tw * (0.7 + energy * 0.4);
+        const tw = 0.55 + 0.45 * Math.sin(t * 2.1 + p.phase);
+        const alpha = (0.26 + p.l * 0.42) * tw * (0.72 + energy * 0.4);
         ctx.beginPath();
         ctx.arc(x, y, p.size * (1 + energy * 0.25), 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${DUST_GOLD}, ${Math.max(0, Math.min(1, alpha))})`;
