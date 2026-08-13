@@ -19,10 +19,9 @@ const SAMPLE_SIZE = 320; // resolution at which the map is sampled
 const CONTRAST = 2.6; // higher = particles cling tighter to bright contours
 const MIN_DOT_DIST = 1.75; // min spacing between dots in sample px — the "beads on
 // a string" look: dots stay individually visible instead of clumping
-// Palette from the mockup: champagne gold dust, warm amber glow, muted ring.
+// Palette from the mockup: champagne gold dust, warm amber glow.
 const DUST_GOLD = "246, 208, 138";
 const GLOW_WARM = "196, 142, 66";
-const RING_GOLD = "216, 169, 78";
 
 interface FacePoint {
   u: number; // -1..1 across the face box
@@ -41,8 +40,7 @@ interface Dust {
 }
 
 /**
- * The golden face orb — Jesus' face in particles of light inside a thin gold
- * circle. It glows and shimmers more strongly while he speaks and reacts
+ * The golden face orb — Jesus' face in particles of light. It glows and shimmers more strongly while he speaks and reacts
  * gently to the visitor's voice.
  */
 export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
@@ -169,7 +167,6 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
       const h = canvas.clientHeight;
       const cx = w / 2;
       const cy = h / 2;
-      // The ring (1.38 × base) must fit the frame with a little margin.
       const base = Math.min(w / 3.1, h / 2.85);
       t += 0.016;
 
@@ -190,13 +187,6 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
       glow.addColorStop(1, `rgba(${GLOW_WARM}, 0)`);
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
-
-      // ── Thin full circle ───────────────────────────────────────────────
-      ctx.beginPath();
-      ctx.arc(cx, cy, base * 1.38 * pulse, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${RING_GOLD}, ${0.55 + energy * 0.25})`;
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
 
       // ── Ambient dust drifting inside and around the circle ─────────────
       for (const p of dust) {
