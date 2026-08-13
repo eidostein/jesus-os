@@ -96,6 +96,17 @@ export function handleVoiceSocket(client) {
       try {
         session = await connectWithRotation(client, sendJson, { voice, language, systemInstruction });
         sendJson({ type: "ready", voice });
+        // Nudge the model to speak first: the opening greeting defined in the
+        // knowledge style file (editable in the /os Knowledge tab).
+        try {
+          const langName = language === "en" ? "English" : "German";
+          session.sendClientContent({
+            turns: [{ role: "user", parts: [{ text: `[The visitor has just arrived and is listening. Speak your opening greeting now, in ${langName}, exactly as instructed — slowly, with the pauses.]` }] }],
+            turnComplete: true,
+          });
+        } catch (err) {
+          console.warn("[live] greeting nudge failed:", err.message);
+        }
       } catch (err) {
         console.error("[live] all keys failed:", err.message);
         sendJson({ type: "error", message: "The line to heaven is busy right now. Please try again in a moment." });

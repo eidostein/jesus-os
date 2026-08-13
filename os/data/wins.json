@@ -1,30 +1,57 @@
 {
   "wins": [
-    { "d": "2026-08-12", "area": "launch",
+    {
+      "d": "2026-08-12",
+      "area": "launch",
       "text": "Repo reborn: the trading platform was stripped to zero and Hey Jesus built in its place — clean history, no leftovers.",
       "text_de": "Repo neu geboren: Die Trading-Plattform wurde restlos entfernt und Hey Jesus an ihrer Stelle gebaut — saubere Historie, keine Altlasten.",
-      "doc": "10-Product/how-it-works" },
-    { "d": "2026-08-12", "area": "product",
+      "doc": "10-Product/how-it-works"
+    },
+    {
+      "d": "2026-08-12",
+      "area": "product",
       "text": "Homepage live in the sacred dark-gold design: hero portrait, Matthew 11:28, breathing orb, EN/DE.",
-      "text_de": "Homepage live im dunkel-goldenen Design: Hero-Porträt, Matthäus 11,28, atmender Orb, EN/DE." },
-    { "d": "2026-08-12", "area": "voice",
+      "text_de": "Homepage live im dunkel-goldenen Design: Hero-Porträt, Matthäus 11,28, atmender Orb, EN/DE."
+    },
+    {
+      "d": "2026-08-12",
+      "area": "voice",
       "text": "All 30 Gemini voices selectable on the homepage; Charon (deep · calm) opens as the default Jesus voice.",
       "text_de": "Alle 30 Gemini-Stimmen auf der Homepage wählbar; Charon (tief · ruhig) ist die Standard-Jesus-Stimme.",
-      "doc": "10-Product/voices" },
-    { "d": "2026-08-12", "area": "voice",
+      "doc": "10-Product/voices"
+    },
+    {
+      "d": "2026-08-12",
+      "area": "voice",
       "text": "First verified conversation: a spoken question went through the full pipeline and Jesus answered — \"I am here, my friend. Peace be with you.\"",
-      "text_de": "Erstes verifiziertes Gespräch: Eine gesprochene Frage durchlief die ganze Pipeline und Jesus antwortete — „I am here, my friend. Peace be with you.\"" },
-    { "d": "2026-08-12", "area": "ops",
+      "text_de": "Erstes verifiziertes Gespräch: Eine gesprochene Frage durchlief die ganze Pipeline und Jesus antwortete — „I am here, my friend. Peace be with you.\""
+    },
+    {
+      "d": "2026-08-12",
+      "area": "ops",
       "text": "Production stack live at jesus.baa.boo: Docker + Caddy behind Cloudflare, CI/CD ready, key-pool rotation surviving two dead API keys.",
       "text_de": "Produktions-Stack live auf jesus.baa.boo: Docker + Caddy hinter Cloudflare, CI/CD bereit, Schlüssel-Rotation überlebt zwei tote API-Keys.",
-      "doc": "30-Tech/architecture" },
-    { "d": "2026-08-12", "area": "os",
+      "doc": "30-Tech/architecture"
+    },
+    {
+      "d": "2026-08-12",
+      "area": "os",
       "text": "This dashboard: jesus-os inherited the segnals-os engine — goals, tasks, achievements, bilingual docs, and a live Knowledge tab.",
       "text_de": "Dieses Dashboard: jesus-os erbte die segnals-os-Engine — Ziele, Aufgaben, Erfolge, zweisprachige Doku und ein Live-Wissen-Tab.",
-      "doc": "20-Knowledge/README" },
-    { "d": "2026-08-13", "area": "voice",
+      "doc": "20-Knowledge/README"
+    },
+    {
+      "d": "2026-08-13",
+      "area": "voice",
       "text": "The partner crowned the Jesus voice: Algieba (smooth · calm) is now the default, slowed and softened via the style instruction. Mobile layout polished the same day.",
       "text_de": "Der Partner kürte die Jesus-Stimme: Algieba (weich · ruhig) ist jetzt Standard, verlangsamt und weicher über die Stil-Instruktion. Mobil-Layout am selben Tag poliert.",
-      "doc": "10-Product/voices" }
+      "doc": "10-Product/voices"
+    },
+    {
+      "d": "2026-08-13",
+      "area": "product",
+      "text": "The orb became a face: Jesus' portrait in golden dust particles (sampled from a contour drawing), and he now opens every conversation himself — \"Peace be with you. … I am here. … What is on your heart?\" — slowly, in the visitor's language.",
+      "text_de": "Aus dem Orb wurde ein Gesicht: Jesu Porträt aus goldenen Staubpartikeln (aus einer Konturzeichnung gesampelt), und er eröffnet jetzt jedes Gespräch selbst — „Friede sei mit dir. … Ich bin hier. … Was bewegt dein Herz?\" — langsam, in der Sprache des Besuchers."
+    }
   ]
 }

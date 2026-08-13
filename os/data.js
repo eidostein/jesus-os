@@ -245,6 +245,12 @@ window.NL_DATA = {
       "text": "The partner crowned the Jesus voice: Algieba (smooth · calm) is now the default, slowed and softened via the style instruction. Mobile layout polished the same day.",
       "text_de": "Der Partner kürte die Jesus-Stimme: Algieba (weich · ruhig) ist jetzt Standard, verlangsamt und weicher über die Stil-Instruktion. Mobil-Layout am selben Tag poliert.",
       "doc": "10-Product/voices"
+    },
+    {
+      "d": "2026-08-13",
+      "area": "product",
+      "text": "The orb became a face: Jesus' portrait in golden dust particles (sampled from a contour drawing), and he now opens every conversation himself — \"Peace be with you. … I am here. … What is on your heart?\" — slowly, in the visitor's language.",
+      "text_de": "Aus dem Orb wurde ein Gesicht: Jesu Porträt aus goldenen Staubpartikeln (aus einer Konturzeichnung gesampelt), und er eröffnet jetzt jedes Gespräch selbst — „Friede sei mit dir. … Ich bin hier. … Was bewegt dein Herz?\" — langsam, in der Sprache des Besuchers."
     }
   ],
   "plans": {

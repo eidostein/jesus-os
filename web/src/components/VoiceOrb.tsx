@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import faceMapUrl from "@/assets/face-map.jpg";
 
 interface VoiceOrbProps {
   /** Called every frame; return current audio levels (0..1). */
@@ -7,23 +8,27 @@ interface VoiceOrbProps {
 }
 
 /* ── Look & feel ──────────────────────────────────────────────────────────────
-   Every constant here is a design dial — the orb is hand-drawn on a canvas,
-   not a library widget, so shape, density, colour and motion are all editable.
-   Reference: the amber "sound-wave nebula" mockup — wavy particle bands in a
-   lens silhouette, radial streaks, white-hot starburst core, two glowing arcs.
+   The orb draws the face of Jesus in golden dust: particle positions are
+   sampled from the luminance of a contour drawing (assets/face-map.jpg), so
+   swapping that image reshapes the whole graphic. Everything else — palette,
+   density, glow, motion — is a dial below. Hand-drawn on canvas, no library.
    ────────────────────────────────────────────────────────────────────────── */
-const LENS_WIDTH = 2.1; // half-width of the lens, in units of `base`
-const LENS_HEIGHT = 1.0; // half-height at the centre
-const LENS_TAPER = 0.75; // >0; higher = sharper points at the tips
-const RING_COUNT = 13; // wavy concentric bands that build the mesh
-const RING_SEGMENTS = 110; // smoothness of each band
-const DUST_COUNT = 1500; // loose shimmering dust on top of the bands
-const STREAK_COUNT = 22; // fine radial rays leaving the core
-// Palette from the mockup: saturated amber-orange embers on near-black.
-const CORE = "255, 243, 216";
-const GOLD = "255, 172, 64";
-const GOLD_DEEP = "236, 126, 26";
-const EMBER = "196, 84, 10";
+const FACE_PARTICLES = 2800; // dots forming the face (halved on small screens)
+const DUST_COUNT = 320; // ambient sparkle drifting around the face
+const SAMPLE_SIZE = 256; // resolution at which the map is sampled
+const CONTRAST = 2.6; // higher = particles cling tighter to bright contours
+// Palette from the mockup: champagne gold dust, warm amber glow, muted ring.
+const DUST_GOLD = "246, 208, 138";
+const GLOW_WARM = "196, 142, 66";
+const RING_GOLD = "216, 169, 78";
+
+interface FacePoint {
+  u: number; // -1..1 across the face box
+  v: number;
+  l: number; // source luminance 0..1
+  size: number;
+  phase: number;
+}
 
 interface Dust {
   r: number;
@@ -34,9 +39,9 @@ interface Dust {
 }
 
 /**
- * The golden voice orb — wavy bands of amber light in a lens shape that
- * breathe with the conversation: they swell and brighten when Jesus speaks
- * and shimmer as you speak.
+ * The golden face orb — Jesus' face in particles of light inside a thin gold
+ * circle. It glows and shimmers more strongly while he speaks and reacts
+ * gently to the visitor's voice.
  */
 export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,30 +60,66 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
 
     const small = canvas.clientWidth < 520;
 
-    // Each band gets its own wave signature so the mesh looks organic.
-    const rings = Array.from({ length: RING_COUNT }, (_, i) => ({
-      r: 0.18 + (i / (RING_COUNT - 1)) * 0.82,
-      waves: 3 + Math.floor(Math.random() * 4),
-      phase: Math.random() * Math.PI * 2,
-      drift: (0.08 + Math.random() * 0.12) * (Math.random() < 0.5 ? -1 : 1),
-      amp: 0.05 + Math.random() * 0.09,
-    }));
+    let facePts: FacePoint[] = [];
+    const img = new Image();
+    img.src = faceMapUrl;
+    img.onload = () => {
+      const S = SAMPLE_SIZE;
+      const oc = document.createElement("canvas");
+      oc.width = S;
+      oc.height = S;
+      const octx = oc.getContext("2d", { willReadFrequently: true })!;
+      octx.drawImage(img, 0, 0, S, S);
+      const data = octx.getImageData(0, 0, S, S).data;
 
-    // Two dust populations: a dense haze around the core plus spread sparkle
-    // reaching into the wings — that mix is what makes the mockup feel full.
-    const dust: Dust[] = Array.from({ length: small ? DUST_COUNT / 2 : DUST_COUNT }, (_, i) => ({
-      r: Math.pow(Math.random(), i % 3 === 0 ? 0.5 : 1.25),
+      // High-pass: luminance minus a blurred copy isolates the thin contour
+      // lines (hair, eyes, beard) and cancels the broad soft glow — otherwise
+      // the glow's sheer area soaks up all the particles and the face becomes
+      // an unreadable blob. The warm glow is painted separately at draw time.
+      const bc = document.createElement("canvas");
+      bc.width = S;
+      bc.height = S;
+      const bctx = bc.getContext("2d", { willReadFrequently: true })!;
+      bctx.filter = "blur(6px)";
+      bctx.drawImage(img, 0, 0, S, S);
+      const blur = bctx.getImageData(0, 0, S, S).data;
+      const lumAt = (d: Uint8ClampedArray, i: number) =>
+        (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+
+      const pts: FacePoint[] = [];
+      const target = small ? FACE_PARTICLES / 2 : FACE_PARTICLES;
+      const sprinkle = Math.floor(target * 0.14); // soft fill inside the glow
+      let guard = 0;
+      while (pts.length < target && guard++ < 800_000) {
+        const px = Math.random() * S;
+        const py = Math.random() * S;
+        const i = ((py | 0) * S + (px | 0)) * 4;
+        const l = lumAt(data, i);
+        const edge = Math.max(0, l - lumAt(blur, i));
+        const wantSprinkle = pts.length < sprinkle;
+        const p = wantSprinkle
+          ? Math.pow(l, 3) * 0.5
+          : Math.pow(Math.min(1, edge * 3.2), CONTRAST * 0.6);
+        if (Math.random() < p) {
+          const strength = wantSprinkle ? l * 0.5 : Math.min(1, 0.35 + edge * 2.6);
+          pts.push({
+            u: (px / S) * 2 - 1,
+            v: (py / S) * 2 - 1,
+            l: strength,
+            size: 0.45 + Math.random() * 0.95 + strength * 0.7,
+            phase: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+      facePts = pts;
+    };
+
+    const dust: Dust[] = Array.from({ length: small ? DUST_COUNT / 2 : DUST_COUNT }, () => ({
+      r: 0.25 + Math.pow(Math.random(), 0.6) * 0.95,
       theta: Math.random() * Math.PI * 2,
-      size: 0.4 + Math.random() * 1.6,
-      speed: 0.05 + Math.random() * 0.12,
+      size: 0.4 + Math.random() * 1.5,
+      speed: 0.03 + Math.random() * 0.08,
       twinkle: Math.random() * Math.PI * 2,
-    }));
-
-    // Fixed random angles/lengths so the starburst doesn't flicker randomly.
-    const streaks = Array.from({ length: STREAK_COUNT }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      len: 0.25 + Math.random() * 0.55,
-      alpha: 0.25 + Math.random() * 0.4,
     }));
 
     const resize = () => {
@@ -98,144 +139,62 @@ export function VoiceOrb({ getLevels, active }: VoiceOrbProps) {
       const h = canvas.clientHeight;
       const cx = w / 2;
       const cy = h / 2;
-      const base = Math.min(w / (LENS_WIDTH * 2.5), h / 2.35);
+      // The ring (1.38 × base) must fit the frame with a little margin.
+      const base = Math.min(w / 3.1, h / 2.85);
       t += 0.016;
 
       const { mic, out } = getLevelsRef.current();
       smoothOut += (Math.min(out * 3, 1) - smoothOut) * 0.12;
       smoothMic += (Math.min(mic * 4, 1) - smoothMic) * 0.15;
       const energy = activeRef.current ? Math.max(smoothOut, smoothMic * 0.6) : 0;
-      const breathe = 1 + Math.sin(t * 0.7) * 0.02 + energy * 0.22;
-
-      const halfW = base * LENS_WIDTH * breathe;
-      const halfH = base * LENS_HEIGHT * breathe;
-
-      // Vertical squeeze towards the lens tips — the pointed-eye silhouette.
-      const envelope = (u: number) => Math.pow(Math.max(0, 1 - u * u), LENS_TAPER);
+      // The face keeps its dignity: it breathes in brightness, not in shape.
+      const pulse = 1 + Math.sin(t * 0.7) * 0.012 + energy * 0.035;
 
       ctx.clearRect(0, 0, w, h);
 
-      // ── Ember glow behind everything ───────────────────────────────────
-      const glowR = base * (1.1 + energy * 0.5) * breathe;
+      // ── Warm glow behind the face ──────────────────────────────────────
+      const glowR = base * (1.15 + energy * 0.35) * pulse;
       const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
-      glow.addColorStop(0, `rgba(${GOLD}, ${0.5 + energy * 0.3})`);
-      glow.addColorStop(0.25, `rgba(${GOLD_DEEP}, ${0.22 + energy * 0.2})`);
-      glow.addColorStop(0.6, `rgba(${EMBER}, 0.08)`);
-      glow.addColorStop(1, `rgba(${EMBER}, 0)`);
+      glow.addColorStop(0, `rgba(${GLOW_WARM}, ${0.5 + energy * 0.3})`);
+      glow.addColorStop(0.45, `rgba(${GLOW_WARM}, ${0.2 + energy * 0.15})`);
+      glow.addColorStop(1, `rgba(${GLOW_WARM}, 0)`);
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, w, h);
 
-      // ── Faint dotted outer circle ──────────────────────────────────────
-      ctx.save();
-      ctx.setLineDash([1.5, 8]);
+      // ── Thin full circle ───────────────────────────────────────────────
       ctx.beginPath();
-      ctx.arc(cx, cy, base * 1.42 * breathe, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${GOLD_DEEP}, ${0.18 + energy * 0.1})`;
-      ctx.lineWidth = 1;
+      ctx.arc(cx, cy, base * 1.38 * pulse, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${RING_GOLD}, ${0.55 + energy * 0.25})`;
+      ctx.lineWidth = 1.2;
       ctx.stroke();
-      ctx.restore();
 
-      // ── Wavy bands: the mesh that forms the lens ───────────────────────
-      // Drawn as faint polylines with particles sitting on them; wave motion
-      // drifts slowly and deepens with his voice.
-      for (const ring of rings) {
-        const wobble = ring.amp * (1 + energy * 1.6) * base;
-        ctx.beginPath();
-        for (let s = 0; s <= RING_SEGMENTS; s++) {
-          const theta = (s / RING_SEGMENTS) * Math.PI * 2;
-          const u = ring.r * Math.cos(theta);
-          const v = ring.r * Math.sin(theta);
-          const wave =
-            (Math.sin(theta * ring.waves + ring.phase + t * ring.drift * 4) +
-              0.45 * Math.sin(theta * ring.waves * 2.6 + ring.phase * 3 + t * ring.drift * 2)) *
-            wobble *
-            ring.r;
-          const x = cx + u * halfW;
-          const y = cy + (v * halfH + wave) * envelope(u);
-          s === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = `rgba(${GOLD_DEEP}, ${(0.16 - ring.r * 0.08) * (1 + energy)})`;
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
-
-        // Beads of light along the band, brighter near the core.
-        const beads = Math.floor(RING_SEGMENTS / 1.6);
-        for (let b = 0; b < beads; b++) {
-          const theta = (b / beads) * Math.PI * 2 + ring.phase;
-          const u = ring.r * Math.cos(theta);
-          const v = ring.r * Math.sin(theta);
-          const wave =
-            Math.sin(theta * ring.waves + ring.phase + t * ring.drift * 4) * wobble * ring.r;
-          const x = cx + u * halfW;
-          const y = cy + (v * halfH + wave) * envelope(u);
-          const tw = 0.55 + 0.45 * Math.sin(t * 1.8 + b * 1.7 + ring.phase);
-          const alpha = (1 - ring.r * 0.55) * tw * (0.55 + energy * 0.45);
-          ctx.beginPath();
-          ctx.arc(x, y, (ring.r < 0.45 ? 1.6 : 1.1) * (1 + energy * 0.35), 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${GOLD}, ${Math.max(0, Math.min(1, alpha))})`;
-          ctx.fill();
-        }
-      }
-
-      // ── Loose dust for sparkle ─────────────────────────────────────────
-      const spin = 0.35 + energy * 1.6;
+      // ── Ambient dust drifting inside and around the circle ─────────────
       for (const p of dust) {
-        p.theta += p.speed * 0.016 * spin;
-        const u = p.r * Math.cos(p.theta);
-        const v = p.r * Math.sin(p.theta);
-        const x = cx + u * halfW;
-        const y = cy + v * halfH * envelope(u);
-        const tw = 0.5 + 0.5 * Math.sin(t * 2 + p.twinkle);
-        const alpha = (1 - p.r * 0.5) * tw * (0.5 + energy * 0.4);
+        p.theta += p.speed * 0.016 * (1 + energy * 1.5);
+        const r = p.r * base * 1.38;
+        const x = cx + Math.cos(p.theta) * r;
+        const y = cy + Math.sin(p.theta) * r * 0.96;
+        const tw = 0.5 + 0.5 * Math.sin(t * 1.6 + p.twinkle);
+        const alpha = (1.15 - p.r) * tw * (0.35 + energy * 0.35);
         ctx.beginPath();
         ctx.arc(x, y, p.size * (1 + energy * 0.3), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${GOLD}, ${Math.max(0, Math.min(1, alpha))})`;
+        ctx.fillStyle = `rgba(${DUST_GOLD}, ${Math.max(0, Math.min(1, alpha))})`;
         ctx.fill();
       }
 
-      // ── Radial streaks out of the core ─────────────────────────────────
-      ctx.lineWidth = 0.8;
-      for (const s of streaks) {
-        const len = base * s.len * (1 + energy * 0.5);
-        const ex = cx + Math.cos(s.angle) * len * 1.4; // stretched horizontally
-        const ey = cy + Math.sin(s.angle) * len * 0.8;
-        const g = ctx.createLinearGradient(cx, cy, ex, ey);
-        g.addColorStop(0, `rgba(${CORE}, ${s.alpha * (0.8 + energy * 0.4)})`);
-        g.addColorStop(0.4, `rgba(${GOLD}, ${s.alpha * 0.4})`);
-        g.addColorStop(1, `rgba(${GOLD_DEEP}, 0)`);
-        ctx.strokeStyle = g;
+      // ── The face, in particles ─────────────────────────────────────────
+      const F = base * 1.16 * pulse; // half-size of the face box
+      const jitter = 1 + energy * 2.2;
+      for (const p of facePts) {
+        const x = cx + p.u * F + Math.sin(t * 0.9 + p.phase) * jitter;
+        const y = cy + p.v * F + Math.cos(t * 0.8 + p.phase * 1.3) * jitter;
+        const tw = 0.62 + 0.38 * Math.sin(t * 2.1 + p.phase);
+        const alpha = (0.3 + p.l * 0.7) * tw * (0.7 + energy * 0.4);
         ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
+        ctx.arc(x, y, p.size * (1 + energy * 0.25), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${DUST_GOLD}, ${Math.max(0, Math.min(1, alpha))})`;
+        ctx.fill();
       }
-
-      // ── Two glowing arcs, slowly turning ───────────────────────────────
-      const ringR = base * 1.18 * breathe;
-      const drift = t * 0.05;
-      ctx.save();
-      ctx.shadowColor = `rgba(${GOLD_DEEP}, 0.9)`;
-      ctx.shadowBlur = 12 + energy * 10;
-      ctx.lineWidth = 2.6;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = `rgba(${GOLD}, ${0.8 + energy * 0.2})`;
-      for (const from of [0.1, 1.1]) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, ringR, (from + drift) * Math.PI, (from + 0.74 + drift) * Math.PI);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // ── White-hot core ─────────────────────────────────────────────────
-      const coreR = base * (0.16 + energy * 0.08);
-      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-      core.addColorStop(0, `rgba(${CORE}, 1)`);
-      core.addColorStop(0.35, `rgba(${GOLD}, ${0.75 + energy * 0.25})`);
-      core.addColorStop(1, `rgba(${GOLD_DEEP}, 0)`);
-      ctx.fillStyle = core;
-      ctx.beginPath();
-      ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
-      ctx.fill();
 
       raf = requestAnimationFrame(draw);
     };
