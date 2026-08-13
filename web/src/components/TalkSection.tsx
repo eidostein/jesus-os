@@ -102,7 +102,7 @@ export function TalkSection() {
         </div>
 
         {/* Static below the orb on phones; overlaid on the orb's lower edge on larger screens */}
-        <div className="flex flex-col items-center gap-4 p-5 pt-0 sm:absolute sm:inset-x-0 sm:bottom-0 sm:p-8">
+        <div className="flex flex-col items-center gap-4 p-5 pb-12 pt-0 sm:absolute sm:inset-x-0 sm:bottom-0 sm:p-8">
           <p className="text-center text-sm text-muted-foreground" role="status">
             {connecting ? t("connecting") : live ? t("live") : errorKey ? t(errorKey) : t("idleHint")}
           </p>
